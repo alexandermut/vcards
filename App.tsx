@@ -417,13 +417,14 @@ const App: React.FC = () => {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200 relative">
       <SettingsModal
         isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
+        onClose={() => { setIsSettingsOpen(false); setError(null); }}
         onSave={handleSaveSettings}
         apiKey={apiKey}
         lang={lang}
         setLang={setLang}
         isDarkMode={isDarkMode}
         setIsDarkMode={setIsDarkMode}
+        errorMessage={error}
       />
 
       <ScanModal
