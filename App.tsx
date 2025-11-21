@@ -594,27 +594,7 @@ const App: React.FC = () => {
 
             {parsedData.isValid ? (
               <div className="flex gap-1">
-                <button
-                  onClick={() => setIsQROpen(true)}
-                  className="flex items-center justify-center bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 w-10 h-10 sm:h-auto sm:w-auto sm:px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 transition-all"
-                  title={t.showQR}
-                >
-                  <QrCode size={18} />
-                </button>
-                <button
-                  onClick={handleManualSave}
-                  className="flex items-center justify-center bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 w-10 h-10 sm:h-auto sm:w-auto sm:px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 transition-all"
-                  title={t.saveHistory}
-                >
-                  <Save size={18} />
-                </button>
-                <button
-                  onClick={handleDownload}
-                  className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-5 py-2 rounded-lg font-medium transition-all shadow-md hover:shadow-lg active:scale-95 text-sm"
-                >
-                  <Download size={18} />
-                  <span className="hidden sm:inline">{t.export}</span>
-                </button>
+                {/* Actions moved to PreviewCard */}
               </div>
             ) : (
               <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-4 py-2 rounded-lg text-sm font-medium border border-amber-200 dark:border-amber-800">
@@ -663,6 +643,8 @@ const App: React.FC = () => {
               onUpdate={setVcardString}
               lang={lang}
               images={currentImages}
+              onSave={handleManualSave}
+              onDownload={handleDownload}
             />
           </div>
         </div>
