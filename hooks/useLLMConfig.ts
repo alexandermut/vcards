@@ -11,7 +11,7 @@ export interface LLMConfig {
 
 const DEFAULT_CONFIG: LLMConfig = {
     provider: 'google',
-    customBaseUrl: 'http://127.0.0.1:11434/v1',
+    customBaseUrl: '/ollama/v1',
     customApiKey: '',
     customModel: 'llava',
 };
@@ -58,7 +58,7 @@ export const useLLMConfig = () => {
         setConfig(prev => ({
             ...prev,
             provider: 'custom',
-            customBaseUrl: 'http://127.0.0.1:11434/v1',
+            customBaseUrl: '/ollama/v1',
             customApiKey: '',
             customModel: 'llava',
         }));
