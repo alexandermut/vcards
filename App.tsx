@@ -361,7 +361,11 @@ const App: React.FC = () => {
   };
 
   const handleOpenScan = () => {
-    if (getKeyToUse() || hasSystemKey) {
+    // Allow scan if Google key OR custom LLM is configured
+    const hasGoogleKey = getKeyToUse() || hasSystemKey;
+    const hasCustomLLM = llmConfig.provider === 'custom' && llmConfig.customBaseUrl && llmConfig.customModel;
+
+    if (hasGoogleKey || hasCustomLLM) {
       setIsScanOpen(true);
     } else {
       setIsSettingsOpen(true);
@@ -370,7 +374,11 @@ const App: React.FC = () => {
   };
 
   const handleImageDrop = (file: File) => {
-    if (getKeyToUse() || hasSystemKey) {
+    // Allow scan if Google key OR custom LLM is configured
+    const hasGoogleKey = getKeyToUse() || hasSystemKey;
+    const hasCustomLLM = llmConfig.provider === 'custom' && llmConfig.customBaseUrl && llmConfig.customModel;
+
+    if (hasGoogleKey || hasCustomLLM) {
       setDroppedFile(file);
       setIsScanOpen(true);
     } else {
