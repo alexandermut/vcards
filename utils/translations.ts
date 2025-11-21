@@ -1,0 +1,216 @@
+import { Language } from '../types';
+
+export const translations = {
+  de: {
+    appTitle: "vCards",
+    settings: "Einstellungen",
+    scan: "Scannen",
+    history: "Verlauf",
+    export: "Export",
+    invalid: "Ungültig",
+    saveHistory: "In Verlauf speichern",
+    showQR: "QR Code anzeigen",
+    
+    // Editor
+    textTab: "Text-Eingabe",
+    codeTab: "vCard Code",
+    enrichTab: "Anreichern",
+    reset: "Reset",
+    undo: "Rückgängig",
+    aiCorrect: "AI",
+    working: "Arbeitet...",
+    dragDropTitle: "Bild hier ablegen",
+    dragDropSubtitle: "um Scan zu starten",
+    textPlaceholder: "Kopieren Sie hier Ihre E-Mail Signatur oder ein Impressum hinein. Die Daten werden automatisch erkannt (Offline-Regex).",
+    enrichPlaceholder: "Geben Sie Anweisungen für die KI ein, z.B.:\n- 'Füge LinkedIn hinzu: linkedin.com/in/muster'\n- 'Ändere die Position zu Senior Manager'\n- 'Ergänze die private Nummer 0170...'",
+    enrichHint: "Die KI aktualisiert die bestehende vCard basierend auf Ihren Anweisungen.",
+    chars: "Zeichen",
+    lines: "Zeilen",
+    
+    // Preview
+    noCard: "Keine gültige vCard erkannt",
+    noCardHint: "Beginnen Sie mit 'BEGIN:VCARD' und beenden Sie mit 'END:VCARD'.",
+    search: "Suche",
+    fullName: "Voller Name",
+    title: "Titel / Position",
+    company: "Firma",
+    call: "Anrufen",
+    email: "Email",
+    notes: "Notizen...",
+    noteLabel: "NOTIZ",
+    birthday: "Geburtstag",
+    street: "Straße",
+    zip: "PLZ",
+    city: "Stadt",
+    country: "Land",
+    scans: "Original Scans",
+
+    // Scan Modal
+    scanTitle: "Karte scannen",
+    scanDesc: "Fotografieren Sie die Vorder- und (optional) Rückseite. Gemini Vision extrahiert die Daten automatisch.",
+    frontSide: "Vorderseite *",
+    backSide: "Rückseite (Optional)",
+    photoUpload: "Foto / Upload",
+    analyze: "Analysiere Bild...",
+    convertToVCard: "In vCard umwandeln",
+    poweredBy: "Powered by Google Gemini",
+    singleMode: "Einzel",
+    batchMode: "Stapel",
+    addToQueue: "Scan & Weiter",
+    batchHint: "Scannen Sie Karten nacheinander. Sie werden im Hintergrund verarbeitet.",
+    
+    // Queue
+    batchQueue: "Verarbeitung",
+    processing: "Verarbeite...",
+    waiting: "Wartend",
+    errors: "Fehler",
+
+    // Settings Modal
+    settingsTitle: "KI-Einstellungen",
+    geminiIntegration: "Google Gemini Integration",
+    geminiDesc: "Für Korrektur & Bilderkennung",
+    recommended: "Empfohlen",
+    connectGoogle: "Mit Google verbinden",
+    connected: "Google Konto verbunden",
+    orManual: "oder manuell",
+    apiKeyLabel: "Gemini API Key",
+    generateKey: "Key generieren",
+    cancel: "Abbrechen",
+    saveSettings: "Einstellungen speichern",
+
+    // History
+    historyTitle: "Verlauf",
+    noHistory: "Keine gespeicherten Karten.",
+    noHistoryHint: "Erstellte oder gescannte Karten erscheinen hier.",
+    load: "Laden",
+    vcfBackup: "VCF Backup",
+    csvExport: "CSV Export",
+    imgExport: "Bilder (ZIP)",
+    clearHistory: "Verlauf leeren",
+    confirmClear: "Verlauf wirklich leeren?",
+    
+    // Social Search
+    socialTitle: "Social Media Recherche",
+    searchParams: "Suchparameter",
+    startSearch: "Recherche starten",
+    googleSearch: "Google Suche",
+    addLink: "Gefundenen Link hinzufügen",
+    addToVCard: "Zur vCard hinzufügen",
+    other: "Andere",
+
+    // Footer
+    impressum: "Impressum",
+    privacy: "Datenschutz",
+
+    // Errors & Prompts
+    missingKey: "API Key fehlt. Bitte in den Einstellungen hinterlegen.",
+    configError: "Bitte verbinden Sie zuerst die AI in den Einstellungen.",
+    resetConfirm: "Möchten Sie wirklich auf die Musterkarte zurücksetzen?",
+  },
+  en: {
+    appTitle: "vCards",
+    settings: "Settings",
+    scan: "Scan",
+    history: "History",
+    export: "Export",
+    invalid: "Invalid",
+    saveHistory: "Save to History",
+    showQR: "Show QR Code",
+    
+    // Editor
+    textTab: "Text Input",
+    codeTab: "vCard Code",
+    enrichTab: "Enrich",
+    reset: "Reset",
+    undo: "Undo",
+    aiCorrect: "AI",
+    working: "Working...",
+    dragDropTitle: "Drop image here",
+    dragDropSubtitle: "to start scan",
+    textPlaceholder: "Paste your email signature or impressum here. Data is automatically detected (Offline Regex).",
+    enrichPlaceholder: "Enter instructions for the AI, e.g.:\n- 'Add LinkedIn: linkedin.com/in/sample'\n- 'Change title to Senior Manager'\n- 'Add private phone 0170...'",
+    enrichHint: "The AI updates the existing vCard based on your instructions.",
+    chars: "Chars",
+    lines: "Lines",
+    
+    // Preview
+    noCard: "No valid vCard detected",
+    noCardHint: "Start with 'BEGIN:VCARD' and end with 'END:VCARD'.",
+    search: "Search",
+    fullName: "Full Name",
+    title: "Title / Position",
+    company: "Company",
+    call: "Call",
+    email: "Email",
+    notes: "Notes...",
+    noteLabel: "NOTE",
+    birthday: "Birthday",
+    street: "Street",
+    zip: "Zip",
+    city: "City",
+    country: "Country",
+    scans: "Original Scans",
+
+    // Scan Modal
+    scanTitle: "Scan Card",
+    scanDesc: "Take a photo of the front and (optionally) back. Gemini Vision extracts data automatically.",
+    frontSide: "Front Side *",
+    backSide: "Back Side (Optional)",
+    photoUpload: "Photo / Upload",
+    analyze: "Analyzing image...",
+    convertToVCard: "Convert to vCard",
+    poweredBy: "Powered by Google Gemini",
+    singleMode: "Single",
+    batchMode: "Batch",
+    addToQueue: "Scan & Next",
+    batchHint: "Scan cards one by one. They are processed in the background.",
+    
+    // Queue
+    batchQueue: "Processing",
+    processing: "Processing...",
+    waiting: "Waiting",
+    errors: "Errors",
+
+    // Settings Modal
+    settingsTitle: "AI Settings",
+    geminiIntegration: "Google Gemini Integration",
+    geminiDesc: "For correction & image recognition",
+    recommended: "Recommended",
+    connectGoogle: "Connect with Google",
+    connected: "Google Account connected",
+    orManual: "or manually",
+    apiKeyLabel: "Gemini API Key",
+    generateKey: "Generate Key",
+    cancel: "Cancel",
+    saveSettings: "Save Settings",
+
+    // History
+    historyTitle: "History",
+    noHistory: "No saved cards.",
+    noHistoryHint: "Created or scanned cards appear here.",
+    load: "Load",
+    vcfBackup: "VCF Backup",
+    csvExport: "CSV Export",
+    imgExport: "Images (ZIP)",
+    clearHistory: "Clear History",
+    confirmClear: "Really clear history?",
+    
+    // Social Search
+    socialTitle: "Social Media Research",
+    searchParams: "Search Parameters",
+    startSearch: "Start Research",
+    googleSearch: "Google Search",
+    addLink: "Add found link",
+    addToVCard: "Add to vCard",
+    other: "Other",
+
+    // Footer
+    impressum: "Imprint",
+    privacy: "Privacy",
+
+    // Errors & Prompts
+    missingKey: "API Key missing. Please configure in settings.",
+    configError: "Please connect to AI in settings first.",
+    resetConfirm: "Do you really want to reset to the sample card?",
+  }
+};

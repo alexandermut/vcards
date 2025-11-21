@@ -1,0 +1,232 @@
+import { GoogleGenAI } from "@google/genai";
+import { AIProvider, Language } from "../types";
+
+// Helper to generate dynamic prompts based on language and context
+const getSystemPrompt = (lang: Language, mode: 'text' | 'vision', isUpdate = false): string => {
+  const isGerman = lang === 'de';
+
+  const ROLE_DEFINITION = `
+    ROLE: You are an elite Data Extraction Engine specialized in vCard 3.0 (RFC 2426) creation.
+    YOUR GOAL: Extract contact information from unstructured text/images with 100% precision and format it into a valid vCard string.
+  `;
+
+  const INPUT_HANDLING = `
+    INPUT PROCESSING RULES:
+    1. **NOISE REMOVAL**: Aggressively IGNORE and DISCARD:
+       - Legal disclaimers ("Confidentiality...", "Diese Nachricht ist...").
+       - "Sent from my iPhone/Android".
+       - GDPR/Datenschutz hints.
+       - Print warnings ("Please consider the environment...").
+       - Generic navigation text ("Home", "About Us", "Login").
+    2. **ENTITY RECOGNITION**:
+       - Identify the PRIMARY contact person. If multiple people listed, prioritize the one that looks like the sender or card owner.
+       - If NO person is found, create a corporate vCard (ORG only).
+  `;
+
+  const UPDATE_INSTRUCTIONS = `
+    **UPDATE MODE ACTIVE**:
+    - The input contains an EXISTING vCard and INSTRUCTIONS.
+    - **TASK**: Apply the instructions to the vCard.
+    - **PRESERVE**: Do NOT remove existing data unless explicitly told to delete/change it.
+    - **MERGE**: Add new data fields intelligently.
+    - Example Instruction: "Add LinkedIn url..." -> Add URL;TYPE=LINKEDIN:...
+  `;
+
+  const FIELD_RULES = `
+    STRICT FIELD MAPPING RULES:
+    
+    1. **N (Name - Structured)**: 
+       - Format: FamilyName;GivenName;MiddleName;Prefix;Suffix
+       - Logic: "Prof. Dr. Max Peter Mustermann MBA" -> "Mustermann;Max;Peter;Prof. Dr.;MBA"
+       - Handle reverse names ("Mustermann, Max") correctly.
+    
+    2. **FN (Full Name - Display)**:
+       - Format: "Prefix Given Family Suffix" (clean readable string).
+    
+    3. **ORG (Organization)**:
+       - Format: Company Name;Department;Division
+       - Example: "Siemens AG, HR Dept." -> "ORG:Siemens AG;HR Dept."
+       - If legal form is present (GmbH, Inc.), keep it part of the company name.
+    
+    4. **ADR (Address)**:
+       - Format: ;;Street Number;City;Region;Zip;Country
+       - **CRITICAL**: Split Street and Number! "Musterstr. 12" -> ";;Musterstr. 12;..."
+       - **INFERENCE**: 
+         - If ZIP is 5 digits and language is German -> Country = "Deutschland".
+         - If "A-" prefix -> Country = "Österreich".
+         - If "CH-" prefix -> Country = "Schweiz".
+    
+    5. **TEL (Telephones)**:
+       - MUST be E.164 format (e.g., +49 30 123456).
+       - Map Labels intelligently:
+         - "Mobil", "Cell", "Handy" -> TYPE=CELL
+         - "Tel", "Phone", "Büro", "Office", "Zentrale" -> TYPE=WORK
+         - "Fax" -> TYPE=FAX
+         - "Privat", "Home" -> TYPE=HOME
+    
+    6. **EMAIL & URL**:
+       - Extract all valid emails. Map personal emails to HOME, corporate to WORK if distinguishable.
+       - Extract all URLs.
+       - **SOCIAL MEDIA**: Detect profile links (LinkedIn, Xing, Twitter) and use: URL;TYPE=LINKEDIN:...
+    
+    7. **NOTE (Context)**:
+       - Put useful info that doesn't fit elsewhere (e.g. opening hours, tax ID) here.
+       - Do NOT put legal disclaimers here.
+
+    8. **PHOTO / LOGO**:
+       - **DO NOT** embed Base64 image data. It makes the vCard too large.
+       - ONLY include PHOTO/LOGO if you can find a valid public URL (e.g. from LinkedIn profile link).
+  `;
+
+  const OUTPUT_FORMAT = `
+    OUTPUT REQUIREMENTS:
+    - Return ONLY the raw vCard string.
+    - NO Markdown blocks (no \`\`\`vcard).
+    - NO Intro/Outro text.
+    - START with 'BEGIN:VCARD'
+    - END with 'END:VCARD'
+    - FORCE 'VERSION:3.0'
+    - FORCE 'REV:${new Date().toISOString()}'
+  `;
+
+  const MODE_SPECIFIC = mode === 'vision'
+    ? "TASK: OCR & Extraction. The input is an image. Look for logos, small print, and layout cues to distinguish Company from Name."
+    : "TASK: Text Extraction. The input is raw text (e.g. email signature, website footer). Parse it robustly.";
+
+  return `
+    ${ROLE_DEFINITION}
+    ${MODE_SPECIFIC}
+    ${isUpdate ? UPDATE_INSTRUCTIONS : INPUT_HANDLING}
+    ${FIELD_RULES}
+    ${OUTPUT_FORMAT}
+    
+    LANGUAGE CONTEXT: ${isGerman ? 'GERMAN (DACH Region focus)' : 'ENGLISH (International focus)'}
+  `;
+};
+
+export const correctVCard = async (input: string, provider: AIProvider, apiKey: string, lang: Language): Promise<string> => {
+  if (!apiKey) throw new Error("MISSING_KEY");
+  
+  // Check if this is an update request
+  const isUpdate = input.startsWith('VCARD_UPDATE_REQUEST|');
+  let contentToSend = input;
+  
+  if (isUpdate) {
+      const parts = input.split('|');
+      if (parts.length >= 3) {
+          const currentVCard = parts[1];
+          const instructions = parts.slice(2).join('|');
+          contentToSend = `EXISTING VCARD:\n${currentVCard}\n\nUSER INSTRUCTIONS:\n${instructions}`;
+      }
+  }
+
+  return callGeminiWithRetry(contentToSend, apiKey, 'text', lang, 0, isUpdate);
+};
+
+export interface ImageInput {
+  base64: string;
+  mimeType: string;
+}
+
+export const scanBusinessCard = async (images: ImageInput[], provider: AIProvider, apiKey: string, lang: Language): Promise<string> => {
+  if (!apiKey) throw new Error("MISSING_KEY");
+  if (images.length === 0) throw new Error("NO_IMAGES");
+  return callGeminiWithRetry(images, apiKey, 'vision', lang);
+};
+
+// --- INTERNAL LOGIC ---
+
+const callGeminiWithRetry = async (
+  input: string | ImageInput[], 
+  apiKey: string, 
+  mode: 'text' | 'vision',
+  lang: Language,
+  retryCount = 0,
+  isUpdate = false
+): Promise<string> => {
+  const ai = new GoogleGenAI({ apiKey });
+  
+  // Use gemini-3-pro-preview for best reasoning and extraction quality
+  const modelName = 'gemini-3-pro-preview'; 
+
+  const systemPrompt = getSystemPrompt(lang, mode, isUpdate);
+
+  let promptConfig: any;
+  
+  if (mode === 'text') {
+    promptConfig = {
+      contents: [
+        { role: 'user', parts: [{ text: `${systemPrompt}\n\n--- BEGIN INPUT DATA ---\n${input as string}\n--- END INPUT DATA ---` }] }
+      ],
+      generationConfig: {
+        temperature: 0.1, // Very low temperature for factual extraction
+        maxOutputTokens: 8192, // Increased for Pro model
+      }
+    };
+  } else {
+    const parts: any[] = [{ text: systemPrompt }];
+    (input as ImageInput[]).forEach(img => {
+      parts.push({
+        inlineData: {
+          mimeType: img.mimeType,
+          data: img.base64
+        }
+      });
+    });
+    promptConfig = {
+      contents: [
+        { role: 'user', parts: parts }
+      ],
+      generationConfig: {
+        temperature: 0.1,
+      }
+    };
+  }
+
+  try {
+    const response = await ai.models.generateContent({
+      model: modelName,
+      ...promptConfig
+    });
+
+    let result = cleanResponse(response.text || '');
+
+    // --- SELF-CORRECTION LOOP ---
+    const isValid = result.includes('BEGIN:VCARD') && result.includes('END:VCARD');
+    
+    if (!isValid && retryCount < 1) {
+      console.warn("AI produced invalid vCard. Attempting self-correction...", result);
+      const fixPrompt = `
+        SYSTEM ALERT: Your previous output was REJECTED.
+        Reason: Missing 'BEGIN:VCARD' or 'END:VCARD' or invalid format.
+        
+        STRICT INSTRUCTION: Return ONLY the valid vCard 3.0 string.
+        
+        Previous Bad Output:
+        ${result}
+      `;
+      
+      // Recursive retry with simple text prompt
+      return callGeminiWithRetry(fixPrompt, apiKey, 'text', lang, retryCount + 1);
+    }
+
+    return result;
+
+  } catch (error) {
+    console.error("Gemini API Error:", error);
+    throw error;
+  }
+};
+
+const cleanResponse = (text: string): string => {
+  let cleaned = text
+    .replace(/```vcard/gi, '')
+    .replace(/```/g, '')
+    .trim();
+    
+  if (cleaned.toLowerCase().startsWith('vcard:')) {
+    cleaned = cleaned.substring(6).trim();
+  }
+  
+  return cleaned;
+};

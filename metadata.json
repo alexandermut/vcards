@@ -1,0 +1,7 @@
+{
+  "name": "vCard Editor & Generator",
+  "description": "Ein moderner vCard-Editor und -Generator. Wandeln Sie Text in vCard-Dateien um, sehen Sie eine Vorschau und nutzen Sie KI zur Optimierung.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

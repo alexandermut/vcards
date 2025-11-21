@@ -1,0 +1,176 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { X, Camera, Upload, Image as ImageIcon, Loader2, CheckCircle2, Sparkles, Layers, ArrowRight } from 'lucide-react';
+import { scanBusinessCard, ImageInput } from '../services/aiService';
+import { resizeImage } from '../utils/imageUtils';
+import { Language } from '../types';
+import { translations } from '../utils/translations';
+
+interface ScanModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onScanComplete: (vcard: string) => void;
+  onAddToQueue?: (front: string, back?: string | null) => void;
+  apiKey: string;
+  initialFile?: File | null;
+  lang: Language;
+}
+
+export const ScanModal: React.FC<ScanModalProps> = ({ 
+  isOpen, onClose, onScanComplete, onAddToQueue, apiKey, initialFile, lang
+}) => {
+  const [frontImage, setFrontImage] = useState<string | null>(null);
+  const [backImage, setBackImage] = useState<string | null>(null);
+  const [isProcessingImage, setIsProcessingImage] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const t = translations[lang];
+
+  const frontInputRef = useRef<HTMLInputElement>(null);
+  const backInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isOpen && initialFile) {
+       processFile(initialFile, setFrontImage);
+    } else if (!isOpen) {
+      // Reset on close
+      setFrontImage(null);
+      setBackImage(null);
+      setError(null);
+    }
+  }, [isOpen, initialFile]);
+
+  if (!isOpen) return null;
+
+  const processFile = async (file: File, setImg: (s: string) => void) => {
+      try {
+          setIsProcessingImage(true);
+          const resizedBase64 = await resizeImage(file, 1024, 0.8);
+          setImg(resizedBase64);
+      } catch (e) {
+          console.error("Image processing failed", e);
+          setError("Fehler beim Verarbeiten des Bildes.");
+      } finally {
+          setIsProcessingImage(false);
+      }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, setImg: (s: string) => void) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      processFile(file, setImg);
+    }
+  };
+
+  const processScan = async () => {
+    if (!frontImage) return;
+
+    if (onAddToQueue) {
+        onAddToQueue(frontImage, backImage);
+        // Instant Reset for next card
+        setFrontImage(null);
+        setBackImage(null);
+        setError(null);
+        return;
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh] border border-slate-200 dark:border-slate-800 transition-colors">
+        
+        <div className="bg-slate-50 dark:bg-slate-950 px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center shrink-0">
+          <h2 className="font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+            <Camera size={20} className="text-blue-600 dark:text-blue-400" />
+            {t.scanTitle}
+          </h2>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full">
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="p-6 overflow-y-auto flex-1 bg-white dark:bg-slate-900">
+          
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            {/* Front Image */}
+            <div className="flex flex-col gap-2">
+              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">{t.frontSide}</span>
+              <div 
+                onClick={() => !isProcessingImage && frontInputRef.current?.click()}
+                className={`aspect-[3/2] rounded-lg border-2 border-dashed flex items-center justify-center cursor-pointer overflow-hidden relative transition-all ${frontImage ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-slate-300 dark:border-slate-700 hover:border-blue-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+              >
+                {isProcessingImage ? (
+                   <Loader2 size={24} className="animate-spin text-blue-500" />
+                ) : frontImage ? (
+                  <img src={frontImage} alt="Front" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="flex flex-col items-center text-slate-400 dark:text-slate-500">
+                    <Camera size={24} className="mb-1" />
+                    <span className="text-[10px]">{t.photoUpload}</span>
+                  </div>
+                )}
+                <input 
+                  type="file" 
+                  ref={frontInputRef} 
+                  accept="image/*" 
+                  capture="environment"
+                  className="hidden" 
+                  onChange={(e) => handleFileChange(e, setFrontImage)}
+                />
+              </div>
+            </div>
+
+            {/* Back Image */}
+            <div className="flex flex-col gap-2">
+              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">{t.backSide}</span>
+              <div 
+                 onClick={() => !isProcessingImage && backInputRef.current?.click()}
+                 className={`aspect-[3/2] rounded-lg border-2 border-dashed flex items-center justify-center cursor-pointer overflow-hidden relative transition-all ${backImage ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-slate-300 dark:border-slate-700 hover:border-blue-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+              >
+                {isProcessingImage ? (
+                   <Loader2 size={24} className="animate-spin text-blue-500" />
+                ) : backImage ? (
+                  <img src={backImage} alt="Back" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="flex flex-col items-center text-slate-400 dark:text-slate-500">
+                    <Camera size={24} className="mb-1" />
+                    <span className="text-[10px]">{t.photoUpload}</span>
+                  </div>
+                )}
+                <input 
+                  type="file" 
+                  ref={backInputRef} 
+                  accept="image/*" 
+                  capture="environment"
+                  className="hidden" 
+                  onChange={(e) => handleFileChange(e, setBackImage)}
+                />
+              </div>
+            </div>
+          </div>
+
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300 text-sm flex items-center gap-2">
+              <X size={16} /> {error}
+            </div>
+          )}
+
+          <button
+            onClick={processScan}
+            disabled={!frontImage || isProcessingImage}
+            className={`w-full py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-all shadow-sm ${
+              !frontImage || isProcessingImage
+                ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed'
+                : 'bg-indigo-600 text-white hover:bg-indigo-700 active:scale-[0.98]'
+            }`}
+          >
+            <Layers size={20} />
+            {t.addToQueue}
+          </button>
+          
+          <p className="text-xs text-center text-indigo-500 mt-3">
+              {t.batchHint}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
