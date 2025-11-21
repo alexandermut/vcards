@@ -1,6 +1,6 @@
-# vCardAI - Intelligenter Visitenkarten-Scanner & Editor
+# vCards - Intelligenter Visitenkarten-Scanner & Editor
 
-**vCardAI** ist eine moderne Web-Anwendung (PWA), die physische Visitenkarten und digitale Signaturen blitzschnell in perfekt formatierte Kontakte umwandelt. Sie kombiniert die Geschwindigkeit lokaler Regex-Algorithmen mit der Intelligenz von Google Gemini AI (GPT-4 Level), um maximale Datenqualität zu gewährleisten.
+**vCards** ist eine moderne Web-Anwendung (PWA), die physische Visitenkarten und digitale Signaturen blitzschnell in perfekt formatierte Kontakte umwandelt. Sie kombiniert die Geschwindigkeit lokaler Regex-Algorithmen mit der Intelligenz von Google Gemini AI (GPT-4 Level), um maximale Datenqualität zu gewährleisten.
 
 Die App arbeitet nach dem **"Privacy First"** Prinzip: Daten werden standardmäßig nur im Browser gespeichert. KI-Funktionen sind optional und erfordern eine aktive Einwilligung.
 
