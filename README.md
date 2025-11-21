@@ -54,6 +54,12 @@ Die App arbeitet nach dem **"Privacy First"** Prinzip: Daten werden standardmä�
     ```
 4.  App öffnen: `http://localhost:5173`
 
+### ⚠️ Wichtiger Hinweis zu lokalen LLMs (Ollama)
+Wenn Sie **lokale Modelle (z.B. Ollama)** nutzen möchten, **müssen** Sie die App über `http://localhost:5173` (den Entwicklungsserver) nutzen.
+*   Der Server enthält einen **Proxy**, der Anfragen an `/ollama` automatisch an `http://127.0.0.1:11434` weiterleitet.
+*   Dies umgeht CORS-Probleme und "Mixed Content" Warnungen des Browsers.
+*   Ein direkter Aufruf der `index.html` oder Hosting auf GitHub Pages funktioniert mit lokalen LLMs standardmäßig nicht (wegen Browser-Sicherheitsrichtlinien).
+
 ### Build für Produktion
 ```bash
 npm run build

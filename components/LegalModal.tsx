@@ -28,8 +28,8 @@ export const LegalModal: React.FC<LegalModalProps> = ({ isOpen, onClose, initial
                         <button
                             onClick={() => setActiveTab('imprint')}
                             className={`text-sm font-semibold flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${activeTab === 'imprint'
-                                    ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm'
-                                    : 'text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800'
+                                ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm'
+                                : 'text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800'
                                 }`}
                         >
                             <Scale size={16} />
@@ -38,8 +38,8 @@ export const LegalModal: React.FC<LegalModalProps> = ({ isOpen, onClose, initial
                         <button
                             onClick={() => setActiveTab('privacy')}
                             className={`text-sm font-semibold flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${activeTab === 'privacy'
-                                    ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm'
-                                    : 'text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800'
+                                ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm'
+                                : 'text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800'
                                 }`}
                         >
                             <Shield size={16} />
@@ -167,10 +167,10 @@ export const LegalModal: React.FC<LegalModalProps> = ({ isOpen, onClose, initial
                             </section>
 
                             <section>
-                                <h2 className="text-lg font-semibold mb-2">4. Optionale KI-Funktionen (Schnittstelle zu Google Gemini)</h2>
-                                <p className="mb-2">Die App bietet Funktionen zur Textoptimierung und Bildanalyse (OCR) an. Diese Funktionen basieren auf Künstlicher Intelligenz.</p>
+                                <h2 className="text-lg font-semibold mb-2">4. Optionale KI-Funktionen (Schnittstelle zu Google Gemini & Lokale LLMs)</h2>
+                                <p className="mb-2">Die App bietet Funktionen zur Textoptimierung und Bildanalyse (OCR) an. Diese Funktionen basieren auf Künstlicher Intelligenz. Sie können wählen zwischen Google Gemini (Cloud) oder einem lokalen LLM.</p>
 
-                                <h3 className="font-semibold text-slate-700 dark:text-slate-400 mt-3 mb-1">4.1. Funktionsweise "Bring Your Own Key" (BYOK)</h3>
+                                <h3 className="font-semibold text-slate-700 dark:text-slate-400 mt-3 mb-1">4.1. Google Gemini (Cloud - "Bring Your Own Key")</h3>
                                 <p className="text-sm mb-2">
                                     Die KI-Verarbeitung findet nicht auf unseren Servern statt. Die App "vCards" dient lediglich als technisches Interface, das eine <strong>direkte Verbindung von Ihrem Browser zur API von Google</strong> herstellt.
                                 </p>
@@ -197,6 +197,15 @@ export const LegalModal: React.FC<LegalModalProps> = ({ isOpen, onClose, initial
                                         <li><strong>Keine sensiblen Daten:</strong> Senden Sie keine Gesundheitsdaten, Passwörter oder Geschäftsgeheimnisse an die KI, wenn Sie nicht über einen entsprechenden kostenpflichtigen Vertrag ("Paid Tier") sichergestellt haben, dass keine Nutzung zu Trainingszwecken erfolgt.</li>
                                     </ol>
                                 </div>
+
+                                <h3 className="font-semibold text-slate-700 dark:text-slate-400 mt-3 mb-1">4.4. Lokale LLMs (Bring Your Own Model)</h3>
+                                <p className="text-sm mb-2">
+                                    Wenn Sie ein lokales LLM (z.B. Ollama) konfigurieren, werden Ihre Daten (Texte, Bilder) <strong>nicht</strong> an externe Server gesendet.
+                                    Die Verarbeitung erfolgt ausschließlich innerhalb Ihres eigenen Netzwerks (z.B. auf Ihrem Computer unter <code>localhost</code>).
+                                </p>
+                                <p className="text-sm">
+                                    <strong>Hinweis:</strong> Sie sind selbst dafür verantwortlich, dass Ihr lokaler LLM-Server sicher konfiguriert ist und keine Daten ungewollt nach außen sendet.
+                                </p>
                             </section>
 
                             <section>
@@ -216,6 +225,19 @@ export const LegalModal: React.FC<LegalModalProps> = ({ isOpen, onClose, initial
                                     <li><strong>Datenlöschung:</strong> Sie können Ihre Daten jederzeit löschen, indem Sie in der App "Alle Daten löschen" wählen oder Ihren Browser-Cache leeren.</li>
                                     <li><strong>Widerruf:</strong> Entfernen Sie Ihren API-Key aus den Einstellungen, um die Nutzung der KI-Schnittstelle technisch zu unterbinden.</li>
                                 </ul>
+                            </section>
+
+                            <section>
+                                <h2 className="text-lg font-semibold mb-2">7. Haftungsausschluss & Eigenverantwortung</h2>
+                                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 p-4 rounded-lg text-blue-900 dark:text-blue-100">
+                                    <strong className="block mb-2">ℹ️ Frontend-Only Architektur</strong>
+                                    <p className="text-sm mb-2">Diese Anwendung ist eine reine <strong>Frontend-Applikation</strong>. Das bedeutet:</p>
+                                    <ol className="list-decimal pl-5 space-y-1 text-sm">
+                                        <li>Der Betreiber dieser Webseite betreibt <strong>keinen Backend-Server</strong>, der Ihre Daten speichert oder verarbeitet.</li>
+                                        <li>Die gesamte Datenverarbeitung findet <strong>in Ihrem Browser</strong> oder auf den von Ihnen konfigurierten APIs (Google oder Lokal) statt.</li>
+                                        <li><strong>Sie tragen die volle Verantwortung</strong> für die Sicherheit Ihrer API-Schlüssel, die Konfiguration Ihrer lokalen Modelle und die Einhaltung geltender Datenschutzgesetze bei der Verarbeitung von Daten Dritter (z.B. Visitenkarten anderer Personen).</li>
+                                    </ol>
+                                </div>
                             </section>
                         </div>
                     )}

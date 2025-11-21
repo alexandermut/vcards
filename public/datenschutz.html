@@ -142,11 +142,16 @@
         <h2>4. Nutzung von KI-Funktionen (Google Gemini API)</h2>
         <p>
             Diese Anwendung bietet Funktionen zur intelligenten Textanalyse, Datenextraktion aus Bildern (OCR) und
-            Datenanreicherung. Hierfür wird die Schnittstelle (API) des Dienstes <strong>Google Gemini</strong>
-            verwendet.
+            Datenanreicherung. Hierfür können Sie entweder den Dienst <strong>Google Gemini</strong> oder ein
+            <strong>lokales LLM (z.B. Ollama)</strong> verwenden.
         </p>
 
-        <h3>4.1. Art der verarbeiteten Daten</h3>
+        <h3>4.1. Google Gemini (Cloud)</h3>
+        <p>
+            Wenn Sie Google Gemini als Anbieter wählen, wird die Schnittstelle (API) von Google verwendet.
+        </p>
+
+        <h4>4.1.1. Art der verarbeiteten Daten (Google)</h4>
         <p>
             Wenn Sie eine KI-Funktion (z.B. Button "AI" oder "Scan & Weiter") betätigen, werden folgende Daten an die
             Google-Server übermittelt:
@@ -158,7 +163,7 @@
                 haben.</li>
         </ul>
 
-        <h3>4.2. Rechtsgrundlage und Einwilligung</h3>
+        <h4>4.1.2. Rechtsgrundlage und Einwilligung</h4>
         <p>
             Die Übermittlung dieser Daten erfolgt auf Basis Ihrer <strong>freiwilligen Einwilligung</strong> (Art. 6
             Abs. 1 lit. a DSGVO), die Sie durch das aktive Auslösen der Funktion (Klick auf den Button) und das
@@ -166,7 +171,7 @@
             ist auch rein manuell/lokal voll funktionsfähig.
         </p>
 
-        <h3>4.3. Datenübermittlung in Drittländer (USA)</h3>
+        <h4>4.1.3. Datenübermittlung in Drittländer (USA)</h4>
         <p>
             Durch die Nutzung der Gemini API werden Daten an Server von Google LLC in den USA übertragen. Google ist
             unter dem <strong>EU-US Data Privacy Framework (DPF)</strong> zertifiziert. Die Europäische Kommission hat
@@ -184,6 +189,18 @@
             Daten unter Umständen zur Verbesserung der Modelle verwenden. Prüfen Sie hierzu die Bedingungen Ihres
             Google-Accounts.
         </div>
+
+        <h3>4.2. Lokale LLMs (Bring Your Own Model)</h3>
+        <p>
+            Wenn Sie ein lokales LLM (z.B. Ollama, LM Studio) konfigurieren, werden Ihre Daten (Texte, Bilder)
+            <strong>nicht</strong> an externe Server gesendet.
+            Die Verarbeitung erfolgt ausschließlich innerhalb Ihres eigenen Netzwerks (z.B. auf Ihrem Computer unter
+            <code>localhost</code>).
+        </p>
+        <p>
+            <strong>Hinweis:</strong> Sie sind selbst dafür verantwortlich, dass Ihr lokaler LLM-Server sicher
+            konfiguriert ist und keine Daten ungewollt nach außen sendet.
+        </p>
 
         <h2>5. Externe Dienste & Ressourcen</h2>
         <p>
@@ -211,6 +228,19 @@
             jederzeit widerrufen, indem Sie Ihren API-Schlüssel aus den Einstellungen der App entfernen und die
             KI-Funktionen nicht mehr nutzen.
         </p>
+
+        <h2>7. Haftungsausschluss & Eigenverantwortung</h2>
+        <div class="warning-box" style="background-color: #e3f2fd; border-color: #b3d7ff; color: #0c5460;">
+            <strong>ℹ️ Frontend-Only Architektur</strong><br><br>
+            Diese Anwendung ist eine reine <strong>Frontend-Applikation</strong>. Das bedeutet:<br>
+            1. Der Betreiber dieser Webseite betreibt <strong>keinen Backend-Server</strong>, der Ihre Daten speichert
+            oder verarbeitet.<br>
+            2. Die gesamte Datenverarbeitung findet <strong>in Ihrem Browser</strong> oder auf den von Ihnen
+            konfigurierten APIs (Google oder Lokal) statt.<br>
+            3. <strong>Sie tragen die volle Verantwortung</strong> für die Sicherheit Ihrer API-Schlüssel, die
+            Konfiguration Ihrer lokalen Modelle und die Einhaltung geltender Datenschutzgesetze bei der Verarbeitung von
+            Daten Dritter (z.B. Visitenkarten anderer Personen).
+        </div>
 
         <div class="info-box">
             Stand:
