@@ -58,12 +58,12 @@ export default defineConfig({
 })
 ```
 
-### Deployment Steps (Easy Method)
+### Deployment Steps (Recommended)
 1.  Push your code to GitHub.
 2.  Go to your repository **Settings** -> **Pages**.
-3.  Under **Build and deployment**, select **GitHub Actions**.
-4.  Click **Static HTML** or **Configure** on a static site workflow.
-5.  GitHub will build and deploy your app.
+3.  **CRITICAL STEP**: Under **Build and deployment** -> **Source**, select **GitHub Actions** (NOT "Deploy from a branch").
+4.  The workflow will automatically pick up the `deploy.yml` file and deploy your app.
+5.  Wait for the action to complete (Actions tab).
 
 ### Deployment Steps (Manual / gh-pages)
 1.  Install the deployer: `npm install gh-pages --save-dev`
