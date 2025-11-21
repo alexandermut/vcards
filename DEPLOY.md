@@ -46,12 +46,14 @@ You can host the app for free on GitHub Pages.
 2.  You need to push this code to a GitHub repository.
 
 ### Configuration (Important!)
-If your repository URL is `https://github.com/user/repo-name`, you must set the base path in `vite.config.ts`:
+If your repository URL is `https://github.com/alexandermut/vcards`, you must set the base path in `vite.config.ts`.
+Since we used `base: './'`, it should work automatically!
 
+If you want to be explicit:
 ```typescript
 // vite.config.ts
 export default defineConfig({
-  base: '/repo-name/', // Replace with your repository name
+  base: '/vcards/', // Matches your repo name
   plugins: [react()],
 })
 ```

@@ -21,16 +21,16 @@ const App: React.FC = () => {
   const [backupVCard, setBackupVCard] = useState<string | null>(null);
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Modals & UI State
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isScanOpen, setIsScanOpen] = useState(false);
   const [isQROpen, setIsQROpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isSocialSearchOpen, setIsSocialSearchOpen] = useState(false);
-  const [searchPlatform, setSearchPlatform] = useState<string>('LINKEDIN'); 
+  const [searchPlatform, setSearchPlatform] = useState<string>('LINKEDIN');
   const [installPrompt, setInstallPrompt] = useState<any>(null);
-  
+
   // Current Images State (to show in preview)
   const [currentImages, setCurrentImages] = useState<string[] | undefined>(undefined);
 
@@ -46,7 +46,7 @@ const App: React.FC = () => {
   // Theme State (Default to dark)
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const saved = localStorage.getItem('theme');
-    return saved ? saved === 'dark' : true; 
+    return saved ? saved === 'dark' : true;
   });
 
   // Language State
@@ -141,15 +141,15 @@ const App: React.FC = () => {
   const getKeyToUse = () => {
     let keyToUse = apiKey;
     if (!keyToUse) {
-       try {
-         // @ts-ignore
-         if (typeof process !== 'undefined' && process.env && process.env.API_KEY) {
-            // @ts-ignore
-            keyToUse = process.env.API_KEY;
-         }
-       } catch (e) {
-         keyToUse = '';
-       }
+      try {
+        // @ts-ignore
+        if (typeof process !== 'undefined' && process.env && process.env.API_KEY) {
+          // @ts-ignore
+          keyToUse = process.env.API_KEY;
+        }
+      } catch (e) {
+        keyToUse = '';
+      }
     }
     return keyToUse;
   };
@@ -158,10 +158,10 @@ const App: React.FC = () => {
   const addToHistory = useCallback((str: string, parsed?: any, scanImages?: string[]) => {
     const p = parsed || parseVCardString(str);
     if (!p.isValid) return;
-    
+
     const newData = p.data as VCardData;
     const newFn = newData.fn?.trim();
-    
+
     // Extract clean phone numbers for matching
     const newPhones = newData.tel?.map(t => clean_number(t.value)) || [];
 
@@ -173,184 +173,184 @@ const App: React.FC = () => {
 
       // 2. Search for semantic duplicate (by Name OR Phone)
       const existingIndex = prev.findIndex(item => {
-         // Match by Name
-         if (newFn && item.name?.trim().toLowerCase() === newFn.toLowerCase()) return true;
-         
-         // Match by Phone (Deep check)
-         if (newPhones.length > 0) {
-             const oldParsed = parseVCardString(item.vcard);
-             const oldPhones = oldParsed.data.tel?.map(t => clean_number(t.value)) || [];
-             // Check for intersection
-             const hasCommonPhone = newPhones.some(np => np.length > 6 && oldPhones.includes(np));
-             if (hasCommonPhone) return true;
-         }
-         
-         return false;
+        // Match by Name
+        if (newFn && item.name?.trim().toLowerCase() === newFn.toLowerCase()) return true;
+
+        // Match by Phone (Deep check)
+        if (newPhones.length > 0) {
+          const oldParsed = parseVCardString(item.vcard);
+          const oldPhones = oldParsed.data.tel?.map(t => clean_number(t.value)) || [];
+          // Check for intersection
+          const hasCommonPhone = newPhones.some(np => np.length > 6 && oldPhones.includes(np));
+          if (hasCommonPhone) return true;
+        }
+
+        return false;
       });
 
       let itemToSave: HistoryItem;
 
       if (existingIndex !== -1) {
-          // --- MERGE LOGIC ---
-          const oldItem = prev[existingIndex];
-          const oldParsed = parseVCardString(oldItem.vcard);
-          
-          // If we have new scan images, use them. If not (manual edit), keep old images.
-          const mergedImages = scanImages && scanImages.length > 0 ? scanImages : oldItem.images;
+        // --- MERGE LOGIC ---
+        const oldItem = prev[existingIndex];
+        const oldParsed = parseVCardString(oldItem.vcard);
 
-          if (oldParsed.isValid) {
-              const oldData = oldParsed.data;
-              const mergedData = { ...newData }; 
+        // If we have new scan images, use them. If not (manual edit), keep old images.
+        const mergedImages = scanImages && scanImages.length > 0 ? scanImages : oldItem.images;
 
-              // Fill in gaps from OLD data (Enrichment)
-              if (!mergedData.fn && oldData.fn) mergedData.fn = oldData.fn; // Keep name if new one is missing
-              if (!mergedData.n && oldData.n) mergedData.n = oldData.n;
-              if (!mergedData.title && oldData.title) mergedData.title = oldData.title;
-              if (!mergedData.role && oldData.role) mergedData.role = oldData.role;
-              if (!mergedData.org && oldData.org) mergedData.org = oldData.org;
-              if (!mergedData.bday && oldData.bday) mergedData.bday = oldData.bday;
-              if (!mergedData.note && oldData.note) mergedData.note = oldData.note;
-              if (!mergedData.photo && oldData.photo) mergedData.photo = oldData.photo;
-              
-              // Merge Arrays (Emails, Phones, URLs)
-              const mergeArrays = (newArr: any[] = [], oldArr: any[] = []) => {
-                  const result = [...newArr];
-                  oldArr.forEach(oldItem => {
-                      const exists = result.some(r => r.value === oldItem.value);
-                      if (!exists) result.push(oldItem);
-                  });
-                  return result;
-              };
-              
-              mergedData.email = mergeArrays(mergedData.email, oldData.email);
-              mergedData.tel = mergeArrays(mergedData.tel, oldData.tel);
-              mergedData.url = mergeArrays(mergedData.url, oldData.url);
-              
-              if ((!mergedData.adr || mergedData.adr.length === 0) && oldData.adr) {
-                  mergedData.adr = oldData.adr;
-              }
+        if (oldParsed.isValid) {
+          const oldData = oldParsed.data;
+          const mergedData = { ...newData };
 
-              const mergedString = generateVCardFromData(mergedData);
-              
-              itemToSave = {
-                  ...oldItem,
-                  timestamp: Date.now(),
-                  name: mergedData.fn || oldItem.name,
-                  org: mergedData.org || oldItem.org,
-                  vcard: mergedString,
-                  images: mergedImages
-              };
-              
-              const newHistory = [...prev];
-              newHistory.splice(existingIndex, 1);
-              return [itemToSave, ...newHistory];
+          // Fill in gaps from OLD data (Enrichment)
+          if (!mergedData.fn && oldData.fn) mergedData.fn = oldData.fn; // Keep name if new one is missing
+          if (!mergedData.n && oldData.n) mergedData.n = oldData.n;
+          if (!mergedData.title && oldData.title) mergedData.title = oldData.title;
+          if (!mergedData.role && oldData.role) mergedData.role = oldData.role;
+          if (!mergedData.org && oldData.org) mergedData.org = oldData.org;
+          if (!mergedData.bday && oldData.bday) mergedData.bday = oldData.bday;
+          if (!mergedData.note && oldData.note) mergedData.note = oldData.note;
+          if (!mergedData.photo && oldData.photo) mergedData.photo = oldData.photo;
+
+          // Merge Arrays (Emails, Phones, URLs)
+          const mergeArrays = (newArr: any[] = [], oldArr: any[] = []) => {
+            const result = [...newArr];
+            oldArr.forEach(oldItem => {
+              const exists = result.some(r => r.value === oldItem.value);
+              if (!exists) result.push(oldItem);
+            });
+            return result;
+          };
+
+          mergedData.email = mergeArrays(mergedData.email, oldData.email);
+          mergedData.tel = mergeArrays(mergedData.tel, oldData.tel);
+          mergedData.url = mergeArrays(mergedData.url, oldData.url);
+
+          if ((!mergedData.adr || mergedData.adr.length === 0) && oldData.adr) {
+            mergedData.adr = oldData.adr;
           }
-          
-          // Fallback if old parse failed
+
+          const mergedString = generateVCardFromData(mergedData);
+
           itemToSave = {
-            id: oldItem.id,
+            ...oldItem,
             timestamp: Date.now(),
-            name: newFn || oldItem.name,
-            org: newData.org || oldItem.org,
-            vcard: str,
+            name: mergedData.fn || oldItem.name,
+            org: mergedData.org || oldItem.org,
+            vcard: mergedString,
             images: mergedImages
           };
+
           const newHistory = [...prev];
           newHistory.splice(existingIndex, 1);
           return [itemToSave, ...newHistory];
+        }
+
+        // Fallback if old parse failed
+        itemToSave = {
+          id: oldItem.id,
+          timestamp: Date.now(),
+          name: newFn || oldItem.name,
+          org: newData.org || oldItem.org,
+          vcard: str,
+          images: mergedImages
+        };
+        const newHistory = [...prev];
+        newHistory.splice(existingIndex, 1);
+        return [itemToSave, ...newHistory];
 
       } else {
-          // --- NEW ENTRY ---
-          itemToSave = {
-            id: crypto.randomUUID(),
-            timestamp: Date.now(),
-            name: newFn || 'Unbekannt',
-            org: newData.org,
-            vcard: str,
-            images: scanImages
-          };
-          return [itemToSave, ...prev].slice(0, 50);
+        // --- NEW ENTRY ---
+        itemToSave = {
+          id: crypto.randomUUID(),
+          timestamp: Date.now(),
+          name: newFn || 'Unbekannt',
+          org: newData.org,
+          vcard: str,
+          images: scanImages
+        };
+        return [itemToSave, ...prev].slice(0, 50);
       }
     });
   }, []);
 
   // --- SCAN QUEUE ---
   const { queue, addJob } = useScanQueue(getKeyToUse(), lang, (vcard, images) => {
-      // Background job completed
-      addToHistory(vcard, undefined, images);
+    // Background job completed
+    addToHistory(vcard, undefined, images);
   });
 
   // Update current displayed images when loading form history or scanning
   const handleLoadHistoryItem = (item: HistoryItem) => {
-      setVcardString(item.vcard);
-      setCurrentImages(item.images);
+    setVcardString(item.vcard);
+    setCurrentImages(item.images);
   };
 
   const handleDownload = () => {
     if (parsedData.isValid) {
-        // Save current state to history on download
-        addToHistory(vcardString, parsedData, currentImages);
+      // Save current state to history on download
+      addToHistory(vcardString, parsedData, currentImages);
     }
     const filename = generateContactFilename(parsedData.data) + '.vcf';
     downloadVCard(vcardString, filename);
   };
 
   const handleManualSave = () => {
-      if (parsedData.isValid) {
-          addToHistory(vcardString, parsedData, currentImages);
-      }
+    if (parsedData.isValid) {
+      addToHistory(vcardString, parsedData, currentImages);
+    }
   };
 
   const handleOptimize = async (overrideInput?: string | any) => {
     const keyToUse = getKeyToUse();
-    
+
     if (!keyToUse && !hasSystemKey) {
-        setIsSettingsOpen(true);
-        return;
+      setIsSettingsOpen(true);
+      return;
     }
 
     setIsOptimizing(true);
     setError(null);
     setBackupVCard(vcardString);
-    
+
     let inputToSend = vcardString;
     if (typeof overrideInput === 'string' && overrideInput.trim().length > 0) {
-        inputToSend = overrideInput;
+      inputToSend = overrideInput;
     }
 
     try {
       const corrected = await correctVCard(inputToSend, 'gemini', keyToUse, lang);
-      
+
       const check = parseVCardString(corrected);
       const hasContent = check.data.fn || check.data.org;
 
       if (check.isValid && hasContent) {
-          setVcardString(corrected);
-          // Note: We don't pass images here as this is text-based optimization
-          // If images were already associated with this contact, the addToHistory merge logic handles it
-          addToHistory(corrected, check); 
+        setVcardString(corrected);
+        // Note: We don't pass images here as this is text-based optimization
+        // If images were already associated with this contact, the addToHistory merge logic handles it
+        addToHistory(corrected, check);
       } else {
-          throw new Error("KI konnte keine gültigen Kontaktdaten extrahieren.");
+        throw new Error("KI konnte keine gültigen Kontaktdaten extrahieren.");
       }
 
     } catch (e: any) {
       console.error(e);
       if (e.message === 'MISSING_KEY') {
-         setIsSettingsOpen(true);
-         setError(t.missingKey);
+        setIsSettingsOpen(true);
+        setError(t.missingKey);
       } else {
-         setError(e.message || "Fehler bei der KI-Verarbeitung.");
+        setError(e.message || "Fehler bei der KI-Verarbeitung.");
       }
     } finally {
       setIsOptimizing(false);
     }
   };
-  
+
   const handleUndo = () => {
-      if (backupVCard) {
-          setVcardString(backupVCard);
-          setBackupVCard(null);
-      }
+    if (backupVCard) {
+      setVcardString(backupVCard);
+      setBackupVCard(null);
+    }
   };
 
   const handleOpenScan = () => {
@@ -371,7 +371,7 @@ const App: React.FC = () => {
       setError(t.configError);
     }
   };
-  
+
   const handleAddSocialUrl = (url: string, platform: string) => {
     if (!url) return;
     const upperPlatform = platform.toUpperCase();
@@ -379,41 +379,41 @@ const App: React.FC = () => {
     let found = false;
 
     lines = lines.map(line => {
-       const upperLine = line.toUpperCase();
-       if (upperLine.startsWith('URL') && upperLine.includes(`TYPE=${upperPlatform}`)) {
-          found = true;
-          return `URL;CHARSET=utf-8;TYPE=${upperPlatform}:${url}`;
-       }
-       return line;
+      const upperLine = line.toUpperCase();
+      if (upperLine.startsWith('URL') && upperLine.includes(`TYPE=${upperPlatform}`)) {
+        found = true;
+        return `URL;CHARSET=utf-8;TYPE=${upperPlatform}:${url}`;
+      }
+      return line;
     });
 
     if (!found) {
-       const endIdx = lines.findIndex(l => l.trim().toUpperCase() === 'END:VCARD');
-       const newLine = `URL;CHARSET=utf-8;TYPE=${upperPlatform}:${url}`;
-       if (endIdx !== -1) {
-          lines.splice(endIdx, 0, newLine);
-       } else {
-          lines.push(newLine);
-       }
+      const endIdx = lines.findIndex(l => l.trim().toUpperCase() === 'END:VCARD');
+      const newLine = `URL;CHARSET=utf-8;TYPE=${upperPlatform}:${url}`;
+      if (endIdx !== -1) {
+        lines.splice(endIdx, 0, newLine);
+      } else {
+        lines.push(newLine);
+      }
     }
-    
+
     setVcardString(lines.join('\n'));
   };
 
   const handleReset = () => {
-      if(window.confirm(t.resetConfirm)) {
-          setVcardString(DEFAULT_VCARD);
-          setCurrentImages(undefined);
-          setBackupVCard(null);
-      }
+    if (window.confirm(t.resetConfirm)) {
+      setVcardString(DEFAULT_VCARD);
+      setCurrentImages(undefined);
+      setBackupVCard(null);
+    }
   }
 
   const isAIReady = !!apiKey || hasSystemKey;
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200 relative">
-      <SettingsModal 
-        isOpen={isSettingsOpen} 
+      <SettingsModal
+        isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
         onSave={handleSaveSettings}
         apiKey={apiKey}
@@ -432,15 +432,15 @@ const App: React.FC = () => {
         initialFile={droppedFile}
         lang={lang}
       />
-      
+
       <QueueIndicator queue={queue} lang={lang} />
-      
+
       <QRCodeModal
         isOpen={isQROpen}
         onClose={() => setIsQROpen(false)}
         vcardString={vcardString}
       />
-      
+
       <SocialSearchModal
         isOpen={isSocialSearchOpen}
         onClose={() => setIsSocialSearchOpen(false)}
@@ -473,35 +473,34 @@ const App: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
-             
-             <button
-               onClick={() => setIsHistoryOpen(true)}
-               className="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors relative"
-               title={t.history}
-             >
-               <History size={18} />
-               {history.length > 0 && (
-                 <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-500 rounded-full"></span>
-               )}
-             </button>
 
-             {installPrompt && (
-               <button
+            <button
+              onClick={() => setIsHistoryOpen(true)}
+              className="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors relative"
+              title={t.history}
+            >
+              <History size={18} />
+              {history.length > 0 && (
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-500 rounded-full"></span>
+              )}
+            </button>
+
+            {installPrompt && (
+              <button
                 onClick={handleInstallApp}
                 className="p-2 rounded-lg text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors animate-pulse"
                 title="App installieren"
-               >
-                 <AppWindow size={18} />
-               </button>
-             )}
+              >
+                <AppWindow size={18} />
+              </button>
+            )}
 
-             <button
+            <button
               onClick={() => setIsSettingsOpen(true)}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all border ${
-                isAIReady 
-                  ? 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800' 
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all border ${isAIReady
+                  ? 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
                   : 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/30'
-              }`}
+                }`}
             >
               {isAIReady ? <UserCircle size={18} className="text-green-600 dark:text-green-500" /> : <Settings size={18} />}
               <span className="text-xs font-medium hidden md:inline">
@@ -521,34 +520,34 @@ const App: React.FC = () => {
             </button>
 
             {parsedData.isValid ? (
-                <div className="flex gap-1">
-                    <button
-                        onClick={() => setIsQROpen(true)}
-                        className="flex items-center justify-center bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 w-10 h-10 sm:h-auto sm:w-auto sm:px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 transition-all"
-                        title={t.showQR}
-                    >
-                        <QrCode size={18} />
-                    </button>
-                    <button
-                        onClick={handleManualSave}
-                        className="flex items-center justify-center bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 w-10 h-10 sm:h-auto sm:w-auto sm:px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 transition-all"
-                        title={t.saveHistory}
-                    >
-                        <Save size={18} />
-                    </button>
-                    <button
-                        onClick={handleDownload}
-                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-5 py-2 rounded-lg font-medium transition-all shadow-md hover:shadow-lg active:scale-95 text-sm"
-                    >
-                        <Download size={18} />
-                        <span className="hidden sm:inline">{t.export}</span>
-                    </button>
-                </div>
+              <div className="flex gap-1">
+                <button
+                  onClick={() => setIsQROpen(true)}
+                  className="flex items-center justify-center bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 w-10 h-10 sm:h-auto sm:w-auto sm:px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 transition-all"
+                  title={t.showQR}
+                >
+                  <QrCode size={18} />
+                </button>
+                <button
+                  onClick={handleManualSave}
+                  className="flex items-center justify-center bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 w-10 h-10 sm:h-auto sm:w-auto sm:px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 transition-all"
+                  title={t.saveHistory}
+                >
+                  <Save size={18} />
+                </button>
+                <button
+                  onClick={handleDownload}
+                  className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-5 py-2 rounded-lg font-medium transition-all shadow-md hover:shadow-lg active:scale-95 text-sm"
+                >
+                  <Download size={18} />
+                  <span className="hidden sm:inline">{t.export}</span>
+                </button>
+              </div>
             ) : (
-                <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-4 py-2 rounded-lg text-sm font-medium border border-amber-200 dark:border-amber-800">
-                    <AlertTriangle size={16} />
-                    <span className="hidden sm:inline">{t.invalid}</span>
-                </div>
+              <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-4 py-2 rounded-lg text-sm font-medium border border-amber-200 dark:border-amber-800">
+                <AlertTriangle size={16} />
+                <span className="hidden sm:inline">{t.invalid}</span>
+              </div>
             )}
           </div>
         </div>
@@ -556,56 +555,56 @@ const App: React.FC = () => {
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 pb-24">
         {error && (
-            <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300 flex items-start sm:items-center gap-3 animate-in slide-in-from-top-2 shadow-sm">
-                <AlertTriangle size={20} className="shrink-0 mt-0.5 sm:mt-0" />
-                <span className="text-sm font-medium">{error}</span>
-                <button onClick={() => setIsSettingsOpen(true)} className="text-sm underline hover:text-red-900 dark:hover:text-red-200 ml-auto font-semibold whitespace-nowrap">
-                    {t.settings}
-                </button>
-            </div>
+          <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300 flex items-start sm:items-center gap-3 animate-in slide-in-from-top-2 shadow-sm">
+            <AlertTriangle size={20} className="shrink-0 mt-0.5 sm:mt-0" />
+            <span className="text-sm font-medium">{error}</span>
+            <button onClick={() => setIsSettingsOpen(true)} className="text-sm underline hover:text-red-900 dark:hover:text-red-200 ml-auto font-semibold whitespace-nowrap">
+              {t.settings}
+            </button>
+          </div>
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-[calc(100vh-180px)] min-h-[600px]">
           <div className="h-full flex flex-col gap-4">
-            <Editor 
-                value={vcardString} 
-                onChange={setVcardString} 
-                onOptimize={handleOptimize}
-                onUndo={handleUndo}
-                canUndo={!!backupVCard}
-                onReset={handleReset}
-                isOptimizing={isOptimizing}
-                onImageDrop={handleImageDrop}
-                lang={lang}
+            <Editor
+              value={vcardString}
+              onChange={setVcardString}
+              onOptimize={handleOptimize}
+              onUndo={handleUndo}
+              canUndo={!!backupVCard}
+              onReset={handleReset}
+              isOptimizing={isOptimizing}
+              onImageDrop={handleImageDrop}
+              lang={lang}
             />
           </div>
 
           <div className="h-full">
-             <PreviewCard 
-                parsed={parsedData} 
-                onShowQR={() => setIsQROpen(true)} 
-                onSocialSearch={(platform) => {
-                    setSearchPlatform(platform || 'LINKEDIN');
-                    setIsSocialSearchOpen(true);
-                }}
-                onUpdate={setVcardString}
-                lang={lang}
-                images={currentImages}
-             />
+            <PreviewCard
+              parsed={parsedData}
+              onShowQR={() => setIsQROpen(true)}
+              onSocialSearch={(platform) => {
+                setSearchPlatform(platform || 'LINKEDIN');
+                setIsSocialSearchOpen(true);
+              }}
+              onUpdate={setVcardString}
+              lang={lang}
+              images={currentImages}
+            />
           </div>
         </div>
       </main>
 
       <footer className="fixed bottom-0 left-0 right-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm border-t border-slate-200 dark:border-slate-800 py-4 transition-colors duration-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-           <div>
-             &copy; {new Date().getFullYear()} {t.appTitle}
-           </div>
-           <div className="flex gap-4 sm:gap-6">
-             <a href="public/impressum.html" target="_blank" rel="noreferrer" className="hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">{t.impressum}</a>
-             <span className="text-slate-300 dark:text-slate-700">|</span>
-             <a href="public/datenschutz.html" target="_blank" rel="noreferrer" className="hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">{t.privacy}</a>
-           </div>
+          <div>
+            &copy; {new Date().getFullYear()} {t.appTitle}
+          </div>
+          <div className="flex gap-4 sm:gap-6">
+            <a href="impressum.html" target="_blank" rel="noreferrer" className="hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">{t.impressum}</a>
+            <span className="text-slate-300 dark:text-slate-700">|</span>
+            <a href="datenschutz.html" target="_blank" rel="noreferrer" className="hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">{t.privacy}</a>
+          </div>
         </div>
       </footer>
     </div>
