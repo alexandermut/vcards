@@ -13,7 +13,7 @@ const DEFAULT_CONFIG: LLMConfig = {
     provider: 'google',
     customBaseUrl: 'http://localhost:11434/v1',
     customApiKey: '',
-    customModel: 'llama3',
+    customModel: 'llava',
 };
 
 export const useLLMConfig = () => {
@@ -60,7 +60,7 @@ export const useLLMConfig = () => {
             provider: 'custom',
             customBaseUrl: 'http://localhost:11434/v1',
             customApiKey: '',
-            customModel: 'llama3',
+            customModel: 'llava',
         }));
     };
 
