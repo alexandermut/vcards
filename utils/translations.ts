@@ -12,7 +12,7 @@ export const translations = {
     showQR: "QR Code anzeigen",
 
     // Editor
-    textTab: "Text eingeben",
+    textTab: "Kontaktdaten Text",
     codeTab: "vCard Code",
     reset: "Reset",
     undo: "Rückgängig",
