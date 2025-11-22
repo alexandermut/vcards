@@ -274,7 +274,7 @@ export const PreviewCard: React.FC<PreviewCardProps> = ({ parsed, onShowQR, onSo
                         onChange={(ev) => updateArrayField('url', i, 'value', ev.target.value)}
                         className="text-sm text-blue-600 dark:text-blue-400 w-full bg-transparent border-none p-0 focus:ring-0 hover:underline"
                       />
-                      <a href={u.value} target="_blank" rel="noreferrer" className="ml-1 text-slate-400 hover:text-blue-500">
+                      <a href={u.value} target="_blank" rel="noopener noreferrer" className="ml-1 text-slate-400 hover:text-blue-500">
                         <ExternalLink size={12} />
                       </a>
                     </div>
