@@ -1,5 +1,17 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { execSync } from 'child_process';
+
+const getVersion = () => {
+  try {
+    // Get the last commit date in the requested format: YYYY-MM-DD-HHMMSS
+    // %ad respects the author date and timezone of the commit
+    return execSync('git log -1 --format="%ad" --date=format:"%Y-%m-%d-%H%M%S"').toString().trim();
+  } catch (e) {
+    console.warn('Failed to get git version, falling back to current date', e);
+    return new Date().toISOString().replace(/T/, '-').replace(/\..+/, '').replace(/:/g, '');
+  }
+};
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -19,6 +31,6 @@ export default defineConfig({
     },
   },
   define: {
-    __APP_VERSION__: JSON.stringify(new Date().toISOString().replace(/T/, '-').replace(/\..+/, '').replace(/:/g, '')),
+    __APP_VERSION__: JSON.stringify(getVersion()),
   },
 });

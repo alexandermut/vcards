@@ -39,7 +39,7 @@ export const parseVCardString = (vcard: string): ParsedVCard => {
   // Handle line unfolding (lines starting with space/tab are continuations)
   const unfoldedVcard = vcard.replace(/\r\n[ \t]/g, '').replace(/\n[ \t]/g, '').replace(/\r[ \t]/g, '');
   const lines = unfoldedVcard.split(/\r\n|\r|\n/);
-  
+
   let isValid = false;
 
   lines.forEach((line) => {
@@ -60,13 +60,13 @@ export const parseVCardString = (vcard: string): ParsedVCard => {
       if (typeParam) {
         return typeParam.replace(/TYPE=/i, '').split(',')[0];
       }
-      
+
       // Fallback: Check for implicit types (e.g., TEL;WORK)
       // Filter out CHARSET, ENCODING, etc.
       const implicitType = params.find(p => {
         const upper = p.toUpperCase();
-        return !upper.includes('=') && 
-               !['CHARSET', 'ENCODING', 'QUOTED-PRINTABLE', 'UTF-8'].some(ignored => upper.includes(ignored));
+        return !upper.includes('=') &&
+          !['CHARSET', 'ENCODING', 'QUOTED-PRINTABLE', 'UTF-8'].some(ignored => upper.includes(ignored));
       });
 
       return implicitType ? implicitType : 'Standard';
@@ -79,24 +79,24 @@ export const parseVCardString = (vcard: string): ParsedVCard => {
       case 'N':
         // N:Family;Given;Middle;Prefix;Suffix
         data.n = value; // Store raw value to preserve structure
-        
+
         if (!data.fn) {
-             // Fallback: Construct FN from N if FN is missing
-             const parts = value.split(';');
-             const family = parts[0] || '';
-             const given = parts[1] || '';
-             const middle = parts[2] || '';
-             const prefix = parts[3] || '';
-             const suffix = parts[4] || '';
-             
-             // Simple construction: Given Middle Family
-             const nameParts = [prefix, given, middle, family, suffix].filter(p => p);
-             data.fn = nameParts.join(' ').trim();
+          // Fallback: Construct FN from N if FN is missing
+          const parts = value.split(';');
+          const family = parts[0] || '';
+          const given = parts[1] || '';
+          const middle = parts[2] || '';
+          const prefix = parts[3] || '';
+          const suffix = parts[4] || '';
+
+          // Simple construction: Given Middle Family
+          const nameParts = [prefix, given, middle, family, suffix].filter(p => p);
+          data.fn = nameParts.join(' ').trim();
         }
         break;
       case 'ORG':
         // Support for ORG:Company;Department
-        data.org = value.replace(/;/g, ' ').trim(); 
+        data.org = value.replace(/;/g, ' ').trim();
         break;
       case 'TITLE':
         data.title = value;
@@ -117,11 +117,11 @@ export const parseVCardString = (vcard: string): ParsedVCard => {
         // ADR:PO Box;Extended Address;Street;City;Region;Zip;Country
         const adrParts = value.split(';');
         const address: VCardAddress = {
-            street: adrParts[2] || '',
-            city: adrParts[3] || '',
-            region: adrParts[4] || '',
-            zip: adrParts[5] || '',
-            country: adrParts[6] || ''
+          street: adrParts[2] || '',
+          city: adrParts[3] || '',
+          region: adrParts[4] || '',
+          zip: adrParts[5] || '',
+          country: adrParts[6] || ''
         };
         data.adr?.push({ type: getType(), value: address });
         break;
@@ -129,9 +129,9 @@ export const parseVCardString = (vcard: string): ParsedVCard => {
         data.note = value.replace(/\\n/g, '\n');
         break;
       case 'PHOTO':
-         // Simple URI handling
-         data.photo = value;
-         break;
+        // Simple URI handling
+        data.photo = value;
+        break;
       case 'BDAY':
         data.bday = value;
         break;
@@ -147,7 +147,7 @@ export const parseVCardString = (vcard: string): ParsedVCard => {
 
 export const generateVCardFromData = (data: VCardData): string => {
   const lines = ['BEGIN:VCARD', 'VERSION:3.0'];
-  
+
   // Always add a fresh revision timestamp
   lines.push(`REV:${new Date().toISOString()}`);
 
@@ -162,29 +162,29 @@ export const generateVCardFromData = (data: VCardData): string => {
     const firstName = nameParts.join(' ');
     lines.push(`N;CHARSET=utf-8:${lastName};${firstName};;;`);
   }
-  
+
   if (data.fn) lines.push(`FN;CHARSET=utf-8:${data.fn}`);
-  
+
   if (data.org) lines.push(`ORG;CHARSET=utf-8:${data.org}`);
   if (data.title) lines.push(`TITLE;CHARSET=utf-8:${data.title}`);
   if (data.role) lines.push(`ROLE;CHARSET=utf-8:${data.role}`);
   if (data.bday) lines.push(`BDAY:${data.bday}`);
-  
+
   // Filter: Only allow URL-based photos in the vCard to keep file size small
   // Scanned images are stored separately in history
   if (data.photo && !data.photo.startsWith('data:')) {
-      lines.push(`PHOTO:${data.photo}`);
+    lines.push(`PHOTO:${data.photo}`);
   }
-  
+
   if (data.note) lines.push(`NOTE;CHARSET=utf-8:${data.note.replace(/\n/g, '\\n')}`);
 
   data.tel?.forEach(t => lines.push(`TEL;CHARSET=utf-8;TYPE=${t.type}:${t.value}`));
   data.email?.forEach(e => lines.push(`EMAIL;CHARSET=utf-8;TYPE=${e.type}:${e.value}`));
   data.url?.forEach(u => lines.push(`URL;CHARSET=utf-8;TYPE=${u.type}:${u.value}`));
-  
+
   data.adr?.forEach(a => {
-     // ADR:PO;Ext;Street;City;Region;Zip;Country
-     lines.push(`ADR;CHARSET=utf-8;TYPE=${a.type}:;;${a.value.street};${a.value.city};${a.value.region};${a.value.zip};${a.value.country}`);
+    // ADR:PO;Ext;Street;City;Region;Zip;Country
+    lines.push(`ADR;CHARSET=utf-8;TYPE=${a.type}:;;${a.value.street};${a.value.city};${a.value.region};${a.value.zip};${a.value.country}`);
   });
 
   lines.push('END:VCARD');
@@ -193,7 +193,7 @@ export const generateVCardFromData = (data: VCardData): string => {
 
 export const vCardToReadableText = (vcard: string): string => {
   const parsed = parseVCardString(vcard);
-  if (!parsed.isValid) return vcard; 
+  if (!parsed.isValid) return vcard;
 
   const d = parsed.data;
   let text = '';
@@ -201,37 +201,43 @@ export const vCardToReadableText = (vcard: string): string => {
   if (d.fn) text += `Name: ${d.fn}\n`;
   if (d.org) text += `Firma: ${d.org}\n`;
   if (d.title) text += `Titel: ${d.title}\n`;
-  
+
   d.tel?.forEach(t => text += `Tel (${t.type}): ${t.value}\n`);
   d.email?.forEach(e => text += `Email (${e.type}): ${e.value}\n`);
   d.url?.forEach(u => text += `Web (${u.type}): ${u.value}\n`);
-  
+
   d.adr?.forEach(a => {
-      const parts = [a.value.street, `${a.value.zip} ${a.value.city}`, a.value.country].filter(p => p.trim());
-      text += `Adresse (${a.type}): ${parts.join(', ')}\n`;
+    const parts = [a.value.street, `${a.value.zip} ${a.value.city}`, a.value.country].filter(p => p.trim());
+    text += `Adresse (${a.type}): ${parts.join(', ')}\n`;
   });
-  
+
   if (d.note) text += `Notiz: ${d.note}\n`;
 
   return text;
 };
 
+export const getTimestamp = (): string => {
+  const now = new Date();
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+};
+
 export const generateContactFilename = (data: VCardData): string => {
-    const date = new Date().toISOString().slice(0, 10);
-    
-    const nameParts = (data.fn || 'Unbekannt').split(' ');
-    let vorname = nameParts[0] || '';
-    let nachname = nameParts.length > 1 ? nameParts[nameParts.length - 1] : '';
-    if (!nachname) { nachname = vorname; vorname = ''; }
-    
-    const firma = data.org || '';
-    
-    const safeStr = (s: string) => s.replace(/[^a-zA-Z0-9äöüÄÖÜß]/g, '_');
-    
-    const parts = [date, safeStr(vorname), safeStr(nachname)];
-    if (firma) parts.push(safeStr(firma));
-    
-    return parts.filter(p => p && p !== '_').join('_');
+  const timestamp = getTimestamp();
+
+  const nameParts = (data.fn || 'Unbekannt').split(' ');
+  let vorname = nameParts[0] || '';
+  let nachname = nameParts.length > 1 ? nameParts[nameParts.length - 1] : '';
+  if (!nachname) { nachname = vorname; vorname = ''; }
+
+  const firma = data.org || '';
+
+  const safeStr = (s: string) => s.replace(/[^a-zA-Z0-9äöüÄÖÜß]/g, '_');
+
+  const parts = [timestamp, safeStr(vorname), safeStr(nachname)];
+  if (firma) parts.push(safeStr(firma));
+
+  return parts.filter(p => p && p !== '_').join('_');
 };
 
 export const downloadVCard = (content: string, filename: string = 'contact.vcf') => {
