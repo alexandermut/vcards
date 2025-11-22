@@ -45,8 +45,8 @@ export type ScanStatus = 'pending' | 'processing' | 'completed' | 'error';
 export interface ScanJob {
   id: string;
   timestamp: number;
-  frontImage: string;
-  backImage?: string | null;
+  frontImage: string | File;
+  backImage?: string | File | null;
   status: ScanStatus;
   error?: string;
 }

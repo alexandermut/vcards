@@ -11,7 +11,55 @@ interface BatchUploadModalProps {
     onRemoveJob: (id: string) => void;
     lang: Language;
 }
+interface QueueItemProps {
+    job: ScanJob;
+    onRemove: (id: string) => void;
+    getStatusIcon: (status: ScanJob['status']) => React.ReactNode;
+}
 
+const QueueItem: React.FC<QueueItemProps> = ({ job, onRemove, getStatusIcon }) => {
+    const [imageUrl, setImageUrl] = useState<string>('');
+
+    React.useEffect(() => {
+        let url = '';
+        if (job.frontImage instanceof File) {
+            url = URL.createObjectURL(job.frontImage);
+            setImageUrl(url);
+        } else {
+            setImageUrl(job.frontImage);
+        }
+
+        return () => {
+            if (url) URL.revokeObjectURL(url);
+        };
+    }, [job.frontImage]);
+
+    return (
+        <div className="flex items-center gap-3 p-2 bg-slate-50 dark:bg-slate-800 rounded-lg">
+            {getStatusIcon(job.status)}
+            <div className="flex-1 min-w-0">
+                {imageUrl && (
+                    <img
+                        src={imageUrl}
+                        alt="Card"
+                        className="h-12 w-auto object-cover rounded border border-slate-200 dark:border-slate-700"
+                    />
+                )}
+            </div>
+            <div className="text-xs text-slate-500 dark:text-slate-400">
+                {job.status === 'error' && job.error}
+            </div>
+            {(job.status === 'pending' || job.status === 'error') && (
+                <button
+                    onClick={() => onRemove(job.id)}
+                    className="p-1 text-slate-400 hover:text-red-500 dark:hover:text-red-400"
+                >
+                    <Trash2 size={14} />
+                </button>
+            )}
+        </div>
+    );
+};
 export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
     isOpen,
     onClose,
@@ -117,8 +165,8 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                         onDragLeave={handleDragLeave}
                         onClick={() => fileInputRef.current?.click()}
                         className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${isDragging
-                                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                                : 'border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-600'
+                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                            : 'border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-600'
                             }`}
                     >
                         <Upload size={48} className="mx-auto mb-4 text-slate-400 dark:text-slate-500" />
@@ -197,30 +245,12 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                             </div>
                             <div className="space-y-1 max-h-64 overflow-y-auto">
                                 {queue.map((job) => (
-                                    <div
+                                    <QueueItem
                                         key={job.id}
-                                        className="flex items-center gap-3 p-2 bg-slate-50 dark:bg-slate-800 rounded-lg"
-                                    >
-                                        {getStatusIcon(job.status)}
-                                        <div className="flex-1 min-w-0">
-                                            <img
-                                                src={job.frontImage}
-                                                alt="Card"
-                                                className="h-12 w-auto object-cover rounded border border-slate-200 dark:border-slate-700"
-                                            />
-                                        </div>
-                                        <div className="text-xs text-slate-500 dark:text-slate-400">
-                                            {job.status === 'error' && job.error}
-                                        </div>
-                                        {(job.status === 'pending' || job.status === 'error') && (
-                                            <button
-                                                onClick={() => onRemoveJob(job.id)}
-                                                className="p-1 text-slate-400 hover:text-red-500 dark:hover:text-red-400"
-                                            >
-                                                <Trash2 size={14} />
-                                            </button>
-                                        )}
-                                    </div>
+                                        job={job}
+                                        onRemove={onRemoveJob}
+                                        getStatusIcon={getStatusIcon}
+                                    />
                                 ))}
                             </div>
                         </div>

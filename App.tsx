@@ -388,14 +388,9 @@ const App: React.FC = () => {
   };
 
   const handleBatchUploadFiles = async (files: File[]) => {
-    // Convert each file to data URL and add to queue
+    // Pass File objects directly to queue (lazy loading)
     for (const file of files) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const dataUrl = reader.result as string;
-        addJob(dataUrl, null);
-      };
-      reader.readAsDataURL(file);
+      addJob(file, null);
     }
   };
 

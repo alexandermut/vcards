@@ -13,7 +13,7 @@ export const useScanQueue = (
   const [queue, setQueue] = useState<ScanJob[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const addJob = useCallback((frontImage: string, backImage?: string | null) => {
+  const addJob = useCallback((frontImage: string | File, backImage?: string | File | null) => {
     const newJob: ScanJob = {
       id: crypto.randomUUID(),
       timestamp: Date.now(),
@@ -37,8 +37,23 @@ export const useScanQueue = (
     setQueue(prev => prev.map((j, i) => i === nextJobIndex ? { ...j, status: 'processing' } : j));
 
     try {
+      // Helper to convert File/String to Base64
+      const getBase64 = async (input: string | File): Promise<string> => {
+        if (typeof input === 'string') return input;
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(input);
+        });
+      };
+
+      // Load images into memory ONLY NOW
+      const frontBase64 = await getBase64(job.frontImage);
+      const backBase64 = job.backImage ? await getBase64(job.backImage) : null;
+
       const images: ImageInput[] = [];
-      const rawImages: string[] = [job.frontImage];
+      const rawImages: string[] = [frontBase64];
 
       // Helper to strip data url prefix
       const toInput = (dataUrl: string): ImageInput => {
@@ -50,10 +65,10 @@ export const useScanQueue = (
         };
       };
 
-      images.push(toInput(job.frontImage));
-      if (job.backImage) {
-        images.push(toInput(job.backImage));
-        rawImages.push(job.backImage);
+      images.push(toInput(frontBase64));
+      if (backBase64) {
+        images.push(toInput(backBase64));
+        rawImages.push(backBase64);
       }
 
       const vcard = await scanBusinessCard(images, llmConfig.provider, apiKey, lang, llmConfig);
@@ -77,6 +92,54 @@ export const useScanQueue = (
       processNextJob();
     }
   }, [queue, isProcessing, processNextJob]);
+
+  // Screen Wake Lock
+  useEffect(() => {
+    let wakeLock: any = null;
+
+    const requestWakeLock = async () => {
+      try {
+        if ('wakeLock' in navigator && isProcessing) {
+          wakeLock = await (navigator as any).wakeLock.request('screen');
+          console.log('Wake Lock active');
+        }
+      } catch (err) {
+        console.error('Wake Lock error:', err);
+      }
+    };
+
+    const releaseWakeLock = async () => {
+      if (wakeLock) {
+        try {
+          await wakeLock.release();
+          wakeLock = null;
+          console.log('Wake Lock released');
+        } catch (err) {
+          console.error('Wake Lock release error:', err);
+        }
+      }
+    };
+
+    if (isProcessing) {
+      requestWakeLock();
+    } else {
+      releaseWakeLock();
+    }
+
+    // Re-acquire lock if visibility changes (e.g. user switches tabs and comes back)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && isProcessing) {
+        requestWakeLock();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      releaseWakeLock();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isProcessing]);
 
   const removeJob = (id: string) => {
     setQueue(prev => prev.filter(j => j.id !== id));
