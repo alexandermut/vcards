@@ -4,6 +4,8 @@ import { scanBusinessCard, ImageInput } from '../services/aiService';
 import { Language } from '../types';
 import type { LLMConfig } from './useLLMConfig';
 
+import { resizeImage } from '../utils/imageUtils';
+
 export const useScanQueue = (
   apiKey: string,
   lang: Language,
@@ -37,15 +39,11 @@ export const useScanQueue = (
     setQueue(prev => prev.map((j, i) => i === nextJobIndex ? { ...j, status: 'processing' } : j));
 
     try {
-      // Helper to convert File/String to Base64
+      // Helper to convert File/String to Base64 (Resized)
       const getBase64 = async (input: string | File): Promise<string> => {
         if (typeof input === 'string') return input;
-        return new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result as string);
-          reader.onerror = reject;
-          reader.readAsDataURL(input);
-        });
+        // Resize to max 1024px, 0.8 quality (JPEG)
+        return await resizeImage(input, 1024, 0.8);
       };
 
       // Load images into memory ONLY NOW

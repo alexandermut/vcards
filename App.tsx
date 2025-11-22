@@ -109,7 +109,12 @@ const App: React.FC = () => {
 
   // Save History
   useEffect(() => {
-    localStorage.setItem('vcard_history', JSON.stringify(history));
+    try {
+      localStorage.setItem('vcard_history', JSON.stringify(history));
+    } catch (e) {
+      console.error("Failed to save history (Quota Exceeded?)", e);
+      // Optional: Could show a toast here, but for now just don't crash
+    }
   }, [history]);
 
   // Save Language
