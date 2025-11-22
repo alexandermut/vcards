@@ -12,9 +12,8 @@ export const translations = {
     showQR: "QR Code anzeigen",
 
     // Editor
-    textTab: "Text-Eingabe",
+    textTab: "Text eingeben",
     codeTab: "vCard Code",
-    enrichTab: "Anreichern",
     reset: "Reset",
     undo: "Rückgängig",
     aiCorrect: "AI",
@@ -22,8 +21,6 @@ export const translations = {
     dragDropTitle: "Bild hier ablegen",
     dragDropSubtitle: "um Scan zu starten",
     textPlaceholder: "Kopieren Sie hier Ihre E-Mail Signatur oder ein Impressum hinein. Oder nutzen Sie die Diktierfunktion Ihrer Tastatur. Die Daten werden automatisch erkannt (Offline-Regex).",
-    enrichPlaceholder: "Geben Sie Anweisungen für die KI ein, z.B.:\n- 'Füge LinkedIn hinzu: linkedin.com/in/muster'\n- 'Ändere die Position zu Senior Manager'\n- 'Ergänze die private Nummer 0170...'",
-    enrichHint: "Die KI aktualisiert die bestehende vCard basierend auf Ihren Anweisungen.",
     chars: "Zeichen",
     lines: "Zeilen",
 
@@ -137,9 +134,8 @@ export const translations = {
     showQR: "Show QR Code",
 
     // Editor
-    textTab: "Text Input",
+    textTab: "Enter Text",
     codeTab: "vCard Code",
-    enrichTab: "Enrich",
     reset: "Reset",
     undo: "Undo",
     aiCorrect: "AI",
@@ -147,8 +143,6 @@ export const translations = {
     dragDropTitle: "Drop image here",
     dragDropSubtitle: "to start scan",
     textPlaceholder: "Paste your email signature or impressum here. Or use your keyboard's dictation feature. Data is automatically detected (Offline Regex).",
-    enrichPlaceholder: "Enter instructions for the AI, e.g.:\n- 'Add LinkedIn: linkedin.com/in/sample'\n- 'Change title to Senior Manager'\n- 'Add private phone 0170...'",
-    enrichHint: "The AI updates the existing vCard based on your instructions.",
     chars: "Chars",
     lines: "Lines",
 
