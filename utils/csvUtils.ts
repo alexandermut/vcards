@@ -2,20 +2,35 @@ import { HistoryItem, VCardData } from '../types';
 import { parseVCardString } from './vcardUtils';
 
 export const generateCSV = (history: HistoryItem[]): string => {
+  // Outlook / Google Contacts compatible headers
   const headers = [
-    'Vorname',
-    'Nachname',
-    'Firma',
-    'Titel',
-    'Email (Geschäftlich)',
-    'Telefon (Geschäftlich)',
-    'Mobil',
-    'Webseite',
-    'Notizen',
-    'Erstellt am'
+    'First Name',
+    'Middle Name',
+    'Last Name',
+    'Title',
+    'Company',
+    'Department',
+    'Job Title',
+    'Business Street',
+    'Business City',
+    'Business Postal Code',
+    'Business State',
+    'Business Country',
+    'Business Phone',
+    'Mobile Phone',
+    'Home Phone',
+    'Business Fax',
+    'Email Address',
+    'Email 2',
+    'Email 3',
+    'Web Page',
+    'LinkedIn URL',
+    'Xing URL',
+    'Notes',
+    'Birthday'
   ];
 
-  const escapeCsv = (str: string | undefined) => {
+  const escapeCsv = (str: string | undefined | null) => {
     if (!str) return '';
     const escaped = str.replace(/"/g, '""');
     return `"${escaped}"`;
@@ -25,39 +40,85 @@ export const generateCSV = (history: HistoryItem[]): string => {
     const parsed = parseVCardString(item.vcard);
     const data = parsed.data;
 
-    // Parse Name N:Family;Given...
-    let familyName = '';
-    let givenName = '';
+    // --- Name Parsing ---
+    let firstName = '';
+    let middleName = '';
+    let lastName = '';
+    let title = data.title || '';
+
     if (data.n) {
-      const parts = data.n.split(';'); // Note: In vcardUtils we joined them with space, but raw N logic might differ. 
-      // Actually vcardUtils.ts logic for N simplifies it to a string "Family Given".
-      // Let's try to split FN or N string for CSV best effort
-      const nameParts = (data.n || data.fn || '').split(' ');
-      if (nameParts.length > 1) {
-          familyName = nameParts.pop() || '';
-          givenName = nameParts.join(' ');
+      // N:Family;Given;Middle;Prefix;Suffix
+      const parts = data.n.split(';');
+      lastName = parts[0] || '';
+      firstName = parts[1] || '';
+      middleName = parts[2] || '';
+      if (parts[3] && !title) title = parts[3]; // Use prefix as title if title is empty
+    } else if (data.fn) {
+      // Fallback: Try to split FN
+      const parts = data.fn.split(' ');
+      if (parts.length > 1) {
+        lastName = parts.pop() || '';
+        firstName = parts.join(' ');
       } else {
-          familyName = nameParts[0] || '';
+        firstName = parts[0] || ''; // Single name -> First Name
       }
     }
 
-    // Extract specific types
-    const workEmail = data.email?.find(e => e.type.toUpperCase().includes('WORK') || e.type.toUpperCase().includes('INTERNET'))?.value || data.email?.[0]?.value;
-    const workPhone = data.tel?.find(t => t.type.toUpperCase().includes('WORK'))?.value;
-    const cellPhone = data.tel?.find(t => t.type.toUpperCase().includes('CELL') || t.type.toUpperCase().includes('MOBILE'))?.value;
-    const website = data.url?.[0]?.value;
+    // --- Address Parsing ---
+    // Prefer WORK address, fallback to first available
+    const adr = data.adr?.find(a => a.type && (a.type.toUpperCase().includes('WORK') || a.type.toUpperCase().includes('DOM') || a.type.toUpperCase().includes('INTl'))) || data.adr?.[0];
+
+    // --- Phone Parsing ---
+    const getPhone = (typeQuery: string) =>
+      data.tel?.find(t => t.type.toUpperCase().includes(typeQuery))?.value;
+
+    const workPhone = getPhone('WORK') || getPhone('VOICE'); // Fallback to generic voice
+    const mobilePhone = getPhone('CELL') || getPhone('MOBILE');
+    const homePhone = getPhone('HOME');
+    const fax = getPhone('FAX');
+
+    // --- Email Parsing ---
+    const emails = data.email?.map(e => e.value) || [];
+
+    // --- Social Media Parsing ---
+    const getUrl = (query: string) =>
+      data.url?.find(u => u.value.toLowerCase().includes(query) || (u.type && u.type.toUpperCase().includes(query.toUpperCase())))?.value;
+
+    const linkedIn = getUrl('linkedin');
+    const xing = getUrl('xing');
+    // Generic website: First URL that is NOT social media
+    const website = data.url?.find(u =>
+      !u.value.toLowerCase().includes('linkedin') &&
+      !u.value.toLowerCase().includes('xing') &&
+      !u.value.toLowerCase().includes('twitter') &&
+      !u.value.toLowerCase().includes('facebook')
+    )?.value;
 
     return [
-      escapeCsv(givenName),
-      escapeCsv(familyName),
+      escapeCsv(firstName),
+      escapeCsv(middleName),
+      escapeCsv(lastName),
+      escapeCsv(title),
       escapeCsv(data.org),
-      escapeCsv(data.title),
-      escapeCsv(workEmail),
+      escapeCsv(data.role), // Mapping Role to Department/Job Title is tricky. Usually Role = Job Title.
+      escapeCsv(data.role), // Using Role for Job Title as well
+      escapeCsv(adr?.value.street),
+      escapeCsv(adr?.value.city),
+      escapeCsv(adr?.value.zip),
+      escapeCsv(adr?.value.region),
+      escapeCsv(adr?.value.country),
       escapeCsv(workPhone),
-      escapeCsv(cellPhone),
+      escapeCsv(mobilePhone),
+      escapeCsv(homePhone),
+      escapeCsv(fax),
+      escapeCsv(emails[0]),
+      escapeCsv(emails[1]),
+      escapeCsv(emails[2]),
       escapeCsv(website),
+      escapeCsv(linkedIn),
+      escapeCsv(xing),
       escapeCsv(data.note),
-      escapeCsv(new Date(item.timestamp).toLocaleDateString('de-DE'))
+      escapeCsv(data.bday)
     ].join(',');
   });
 
