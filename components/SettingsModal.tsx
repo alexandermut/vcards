@@ -13,24 +13,30 @@ interface SettingsModalProps {
   isDarkMode: boolean;
   setIsDarkMode: (isDark: boolean) => void;
   errorMessage?: string | null;
-  llmProvider: 'google' | 'custom';
-  setLLMProvider: (provider: 'google' | 'custom') => void;
+  llmProvider: 'google' | 'openai' | 'custom';
+  setLLMProvider: (provider: 'google' | 'openai' | 'custom') => void;
   customBaseUrl: string;
   customApiKey: string;
   customModel: string;
-  setCustomConfig: (config: { customBaseUrl: string; customApiKey: string; customModel: string }) => void;
+  openaiApiKey: string;
+  openaiModel: string;
+  setCustomConfig: (config: { customBaseUrl?: string; customApiKey?: string; customModel?: string; openaiApiKey?: string; openaiModel?: string }) => void;
   onOllamaDefaults: () => void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
   isOpen, onClose, onSave, apiKey, lang, setLang, isDarkMode, setIsDarkMode, errorMessage,
-  llmProvider, setLLMProvider, customBaseUrl, customApiKey, customModel, setCustomConfig, onOllamaDefaults
+  llmProvider, setLLMProvider, customBaseUrl, customApiKey, customModel, openaiApiKey, openaiModel, setCustomConfig, onOllamaDefaults
 }) => {
   // Local state for input
   const [key, setKey] = useState('');
   const [localBaseUrl, setLocalBaseUrl] = useState('');
   const [localApiKey, setLocalApiKey] = useState('');
   const [localModel, setLocalModel] = useState('');
+
+  const [localOpenAIKey, setLocalOpenAIKey] = useState('');
+  const [localOpenAIModel, setLocalOpenAIModel] = useState('');
+
   const [hasSystemKey, setHasSystemKey] = useState(false);
   const t = translations[lang];
 
@@ -40,9 +46,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       setLocalBaseUrl(customBaseUrl);
       setLocalApiKey(customApiKey);
       setLocalModel(customModel);
+      setLocalOpenAIKey(openaiApiKey);
+      setLocalOpenAIModel(openaiModel);
       checkSystemKey();
     }
-  }, [isOpen, apiKey, customBaseUrl, customApiKey, customModel]);
+  }, [isOpen, apiKey, customBaseUrl, customApiKey, customModel, openaiApiKey, openaiModel]);
 
   const checkSystemKey = async () => {
     if ((window as any).aistudio && typeof (window as any).aistudio.hasSelectedApiKey === 'function') {
@@ -70,6 +78,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       customBaseUrl: localBaseUrl,
       customApiKey: localApiKey,
       customModel: localModel,
+      openaiApiKey: localOpenAIKey,
+      openaiModel: localOpenAIModel,
     });
     onClose();
   };
@@ -137,23 +147,33 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             {/* LLM Provider Selection */}
             <div>
               <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">{t.llmProvider}</label>
-              <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-lg">
+              <div className="grid grid-cols-3 gap-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-lg">
                 <button
                   type="button"
                   onClick={() => setLLMProvider('google')}
                   className={`py-2 px-3 rounded-md text-sm font-medium transition-colors ${llmProvider === 'google'
-                      ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                    ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                     }`}
                 >
                   {t.googleDefault}
                 </button>
                 <button
                   type="button"
+                  onClick={() => setLLMProvider('openai')}
+                  className={`py-2 px-3 rounded-md text-sm font-medium transition-colors ${llmProvider === 'openai'
+                    ? 'bg-white dark:bg-slate-700 text-green-600 dark:text-green-400 shadow-sm'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                    }`}
+                >
+                  {t.openai}
+                </button>
+                <button
+                  type="button"
                   onClick={() => setLLMProvider('custom')}
                   className={`py-2 px-3 rounded-md text-sm font-medium transition-colors ${llmProvider === 'custom'
-                      ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                    ? 'bg-white dark:bg-slate-700 text-purple-600 dark:text-purple-400 shadow-sm'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                     }`}
                 >
                   {t.customLLM}
@@ -161,7 +181,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
             </div>
 
-            {llmProvider === 'google' ? (
+            {llmProvider === 'google' && (
               <>
                 <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-900/30">
                   <h3 className="text-sm font-bold text-blue-900 dark:text-blue-200 mb-2 flex items-center gap-2">
@@ -198,7 +218,40 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   </div>
                 </div>
               </>
-            ) : (
+            )}
+
+            {llmProvider === 'openai' && (
+              <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800 space-y-3">
+                <div className="flex justify-between items-center mb-2">
+                  <h4 className="text-sm font-semibold text-slate-900 dark:text-white">OpenAI Settings</h4>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-slate-600 dark:text-slate-400 block mb-1">API Key</label>
+                  <input
+                    type="password"
+                    value={localApiKey}
+                    onChange={(e) => setLocalApiKey(e.target.value)}
+                    placeholder="sk-..."
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-600 font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-slate-600 dark:text-slate-400 block mb-1">{t.modelName}</label>
+                  <input
+                    type="text"
+                    value={localModel}
+                    onChange={(e) => setLocalModel(e.target.value)}
+                    placeholder="gpt-5.1"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-600"
+                  />
+                </div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400">
+                  <p>Standard: <code>gpt-5.1</code>. Supports Vision & Text.</p>
+                </div>
+              </div>
+            )}
+
+            {llmProvider === 'custom' && (
               <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 space-y-3">
                 <div className="flex justify-between items-center mb-2">
                   <h4 className="text-sm font-semibold text-slate-900 dark:text-white">Custom LLM Settings</h4>

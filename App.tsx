@@ -468,6 +468,8 @@ const App: React.FC = () => {
         customBaseUrl={llmConfig.customBaseUrl}
         customApiKey={llmConfig.customApiKey}
         customModel={llmConfig.customModel}
+        openaiApiKey={llmConfig.openaiApiKey}
+        openaiModel={llmConfig.openaiModel}
         setCustomConfig={setCustomConfig}
         onOllamaDefaults={setOllamaDefaults}
       />

@@ -27,7 +27,7 @@ export interface ParsedVCard {
   isValid: boolean;
 }
 
-export type AIProvider = 'google' | 'custom';
+export type AIProvider = 'google' | 'openai' | 'custom';
 
 export type Language = 'de' | 'en';
 

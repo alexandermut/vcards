@@ -106,7 +106,22 @@ const getSystemPrompt = (lang: Language, mode: 'text' | 'vision', isUpdate = fal
   `;
 };
 
-export const correctVCard = async (input: string, provider: AIProvider, apiKey: string, lang: Language): Promise<string> => {
+export const correctVCard = async (input: string, provider: AIProvider, apiKey: string, lang: Language, llmConfig?: LLMConfig): Promise<string> => {
+  // Route to OpenAI if selected
+  if (llmConfig?.provider === 'openai') {
+    return callOpenAI(input, llmConfig.openaiApiKey, 'text', lang, llmConfig.openaiModel);
+  }
+
+  // Route to Custom LLM if selected
+  if (llmConfig?.provider === 'custom') {
+    // Reuse custom logic but pass text input
+    // Note: scanCardWithCustomLLM is designed for images, we might need a text variant or adapt it.
+    // For now, let's assume custom LLM is primarily for vision or we use callGemini as fallback if not implemented.
+    // Actually, the current custom implementation is vision-focused.
+    // Let's stick to Gemini for text if custom is selected but not implemented for text, OR throw error.
+    // Ideally we should implement text support for custom LLM too, but for this task we focus on OpenAI.
+  }
+
   if (!apiKey) throw new Error("MISSING_KEY");
 
   // Check if this is an update request
@@ -137,6 +152,11 @@ export const scanBusinessCard = async (
   lang: Language,
   llmConfig?: LLMConfig
 ): Promise<string> => {
+  // Route to OpenAI if selected
+  if (llmConfig && llmConfig.provider === 'openai') {
+    return callOpenAI(images, llmConfig.openaiApiKey, 'vision', lang, llmConfig.openaiModel);
+  }
+
   // Route to custom LLM if configured
   if (llmConfig && llmConfig.provider === 'custom') {
     return scanCardWithCustomLLM(images, {
@@ -150,6 +170,78 @@ export const scanBusinessCard = async (
   if (!apiKey) throw new Error("MISSING_KEY");
   if (images.length === 0) throw new Error("NO_IMAGES");
   return callGeminiWithRetry(images, apiKey, 'vision', lang);
+};
+
+// --- OPENAI INTEGRATION ---
+
+const callOpenAI = async (
+  input: string | ImageInput[],
+  apiKey: string,
+  mode: 'text' | 'vision',
+  lang: Language,
+  model: string = 'gpt-5.1',
+  retryCount = 0
+): Promise<string> => {
+  if (!apiKey) throw new Error("MISSING_KEY");
+
+  const systemPrompt = getSystemPrompt(lang, mode);
+
+  let messages: any[] = [
+    { role: "system", content: systemPrompt }
+  ];
+
+  if (mode === 'text') {
+    messages.push({ role: "user", content: input as string });
+  } else {
+    const content: any[] = [{ type: "text", text: "Extract vCard from this image:" }];
+    (input as ImageInput[]).forEach(img => {
+      content.push({
+        type: "image_url",
+        image_url: {
+          url: `data:${img.mimeType};base64,${img.base64}`
+        }
+      });
+    });
+    messages.push({ role: "user", content });
+  }
+
+  try {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: model,
+        messages: messages,
+        temperature: 0.1,
+        max_tokens: 4000
+      })
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.error?.message || "OpenAI API Error");
+    }
+
+    const data = await response.json();
+    let result = cleanResponse(data.choices[0]?.message?.content || "");
+
+    // Self-Correction
+    const isValid = result.includes('BEGIN:VCARD') && result.includes('END:VCARD');
+    if (!isValid && retryCount < 1) {
+      console.warn("OpenAI produced invalid vCard. Retrying...");
+      // Simple retry logic
+      return callOpenAI(input, apiKey, mode, lang, model, retryCount + 1);
+    }
+
+    return result;
+
+  } catch (error) {
+    console.error("OpenAI Error:", error);
+    throw error;
+  }
 };
 
 // --- INTERNAL LOGIC ---

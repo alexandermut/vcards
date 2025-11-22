@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 
-export type LLMProvider = 'google' | 'custom';
+export type LLMProvider = 'google' | 'openai' | 'custom';
 
 export interface LLMConfig {
     provider: LLMProvider;
+    openaiApiKey: string;
+    openaiModel: string;
     customBaseUrl: string;
     customApiKey: string;
     customModel: string;
@@ -11,6 +13,8 @@ export interface LLMConfig {
 
 const DEFAULT_CONFIG: LLMConfig = {
     provider: 'google',
+    openaiApiKey: '',
+    openaiModel: 'gpt-5.1',
     customBaseUrl: '/ollama/v1',
     customApiKey: '',
     customModel: 'llava',
@@ -43,7 +47,7 @@ export const useLLMConfig = () => {
         setConfig(prev => ({ ...prev, provider }));
     };
 
-    const setCustomConfig = (custom: Partial<Pick<LLMConfig, 'customBaseUrl' | 'customApiKey' | 'customModel'>>) => {
+    const setCustomConfig = (custom: Partial<Omit<LLMConfig, 'provider'>>) => {
         setConfig(prev => ({
             ...prev,
             ...custom,

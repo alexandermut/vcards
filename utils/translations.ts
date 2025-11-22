@@ -76,7 +76,8 @@ export const translations = {
     apiKeyLabel: "Gemini API Key",
     generateKey: "Key generieren",
     llmProvider: "LLM Anbieter",
-    googleDefault: "Google Gemini (Standard)",
+    googleDefault: "Google Gemini",
+    openai: "OpenAI",
     customLLM: "Custom / Lokales LLM",
     baseUrl: "Base URL",
     modelName: "Modell Name",
@@ -92,6 +93,7 @@ export const translations = {
     startProcessing: "Verarbeitung starten",
     imagesSelected: "Bilder ausgewählt",
     close: "Schließen",
+    cancel: "Abbrechen",
     saveSettings: "Einstellungen speichern",
 
     // History
@@ -198,7 +200,8 @@ export const translations = {
     apiKeyLabel: "Gemini API Key",
     generateKey: "Generate Key",
     llmProvider: "LLM Provider",
-    googleDefault: "Google Gemini (Default)",
+    googleDefault: "Google Gemini",
+    openai: "OpenAI",
     customLLM: "Custom / Local LLM",
     baseUrl: "Base URL",
     modelName: "Model Name",
@@ -214,6 +217,7 @@ export const translations = {
     startProcessing: "Start Processing",
     imagesSelected: "images selected",
     close: "Close",
+    cancel: "Cancel",
     saveSettings: "Save Settings",
 
     // History
