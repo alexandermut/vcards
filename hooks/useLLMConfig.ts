@@ -14,7 +14,7 @@ export interface LLMConfig {
 const DEFAULT_CONFIG: LLMConfig = {
     provider: 'google',
     openaiApiKey: '',
-    openaiModel: 'gpt-5.1',
+    openaiModel: '',
     customBaseUrl: '/ollama/v1',
     customApiKey: '',
     customModel: 'llava',

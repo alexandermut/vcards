@@ -2,6 +2,7 @@ import React from 'react';
 import { X, Trash2, Upload, FileText, Download, History, Contact, Image as ImageIcon } from 'lucide-react';
 import { HistoryItem, Language } from '../types';
 import { generateCSV, downloadCSV } from '../utils/csvUtils';
+import { generateJSON, downloadJSON } from '../utils/jsonUtils';
 import { downloadVCard, generateContactFilename, getTimestamp } from '../utils/vcardUtils';
 import { combineImages } from '../utils/imageUtils';
 import { translations } from '../utils/translations';
@@ -25,6 +26,11 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
   const handleExportCSV = () => {
     const csv = generateCSV(history);
     downloadCSV(csv, `${getTimestamp()}_vcard_export.csv`);
+  };
+
+  const handleExportJSON = () => {
+    const json = generateJSON(history);
+    downloadJSON(json, `${getTimestamp()}_vcard_export.json`);
   };
 
   const handleExportAllVCF = () => {
@@ -154,7 +160,7 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
         {/* Footer Actions */}
         {history.length > 0 && (
           <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 space-y-3">
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-4 gap-2">
               <button
                 onClick={handleExportAllVCF}
                 className="flex flex-col items-center justify-center gap-1 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 py-2 rounded-lg text-[10px] font-medium transition-colors"
@@ -168,6 +174,13 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
               >
                 <FileText size={16} />
                 {t.csvExport}
+              </button>
+              <button
+                onClick={handleExportJSON}
+                className="flex flex-col items-center justify-center gap-1 bg-amber-500 hover:bg-amber-600 text-white py-2 rounded-lg text-[10px] font-medium transition-colors shadow-sm"
+              >
+                <FileText size={16} />
+                {t.jsonExport}
               </button>
               <button
                 onClick={handleExportImages}

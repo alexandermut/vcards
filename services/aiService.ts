@@ -109,7 +109,7 @@ const getSystemPrompt = (lang: Language, mode: 'text' | 'vision', isUpdate = fal
 export const correctVCard = async (input: string, provider: AIProvider, apiKey: string, lang: Language, llmConfig?: LLMConfig): Promise<string> => {
   // Route to OpenAI if selected
   if (llmConfig?.provider === 'openai') {
-    return callOpenAI(input, llmConfig.openaiApiKey, 'text', lang, llmConfig.openaiModel);
+    return callOpenAI(input, llmConfig.openaiApiKey, 'text', lang, llmConfig.openaiModel || 'gpt-5.1');
   }
 
   // Route to Custom LLM if selected
@@ -154,7 +154,7 @@ export const scanBusinessCard = async (
 ): Promise<string> => {
   // Route to OpenAI if selected
   if (llmConfig && llmConfig.provider === 'openai') {
-    return callOpenAI(images, llmConfig.openaiApiKey, 'vision', lang, llmConfig.openaiModel);
+    return callOpenAI(images, llmConfig.openaiApiKey, 'vision', lang, llmConfig.openaiModel || 'gpt-5.1');
   }
 
   // Route to custom LLM if configured

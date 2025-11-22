@@ -28,29 +28,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   isOpen, onClose, onSave, apiKey, lang, setLang, isDarkMode, setIsDarkMode, errorMessage,
   llmProvider, setLLMProvider, customBaseUrl, customApiKey, customModel, openaiApiKey, openaiModel, setCustomConfig, onOllamaDefaults
 }) => {
-  // Local state for input
-  const [key, setKey] = useState('');
-  const [localBaseUrl, setLocalBaseUrl] = useState('');
-  const [localApiKey, setLocalApiKey] = useState('');
-  const [localModel, setLocalModel] = useState('');
-
-  const [localOpenAIKey, setLocalOpenAIKey] = useState('');
-  const [localOpenAIModel, setLocalOpenAIModel] = useState('');
-
   const [hasSystemKey, setHasSystemKey] = useState(false);
   const t = translations[lang];
 
   useEffect(() => {
     if (isOpen) {
-      setKey(apiKey);
-      setLocalBaseUrl(customBaseUrl);
-      setLocalApiKey(customApiKey);
-      setLocalModel(customModel);
-      setLocalOpenAIKey(openaiApiKey);
-      setLocalOpenAIModel(openaiModel);
       checkSystemKey();
     }
-  }, [isOpen, apiKey, customBaseUrl, customApiKey, customModel, openaiApiKey, openaiModel]);
+  }, [isOpen]);
 
   const checkSystemKey = async () => {
     if ((window as any).aistudio && typeof (window as any).aistudio.hasSelectedApiKey === 'function') {
@@ -70,18 +55,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     } else {
       window.open('https://aistudio.google.com/app/apikey', '_blank');
     }
-  };
-
-  const handleSave = () => {
-    onSave(key);
-    setCustomConfig({
-      customBaseUrl: localBaseUrl,
-      customApiKey: localApiKey,
-      customModel: localModel,
-      openaiApiKey: localOpenAIKey,
-      openaiModel: localOpenAIModel,
-    });
-    onClose();
   };
 
   if (!isOpen) return null;
@@ -184,9 +157,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             {llmProvider === 'google' && (
               <>
                 <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-900/30">
-                  <h3 className="text-sm font-bold text-blue-900 dark:text-blue-200 mb-2 flex items-center gap-2">
-                    {t.recommended}
-                  </h3>
+
                   <button
                     onClick={handleConnectGoogle}
                     className="w-full flex items-center justify-center gap-2 bg-white dark:bg-slate-800 border border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium py-2 px-4 rounded-lg transition-all shadow-sm active:scale-[0.98] text-sm"
@@ -206,8 +177,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   </label>
                   <input
                     type="password"
-                    value={key}
-                    onChange={(e) => setKey(e.target.value)}
+                    value={apiKey}
+                    onChange={(e) => onSave(e.target.value)}
                     placeholder="AIzaSy..."
                     className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 rounded-lg text-sm text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 font-mono"
                   />
@@ -229,8 +200,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <label className="text-xs font-medium text-slate-600 dark:text-slate-400 block mb-1">API Key</label>
                   <input
                     type="password"
-                    value={localApiKey}
-                    onChange={(e) => setLocalApiKey(e.target.value)}
+                    value={openaiApiKey}
+                    onChange={(e) => setCustomConfig({ openaiApiKey: e.target.value })}
                     placeholder="sk-..."
                     className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-600 font-mono"
                   />
@@ -239,8 +210,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <label className="text-xs font-medium text-slate-600 dark:text-slate-400 block mb-1">{t.modelName}</label>
                   <input
                     type="text"
-                    value={localModel}
-                    onChange={(e) => setLocalModel(e.target.value)}
+                    value={openaiModel}
+                    onChange={(e) => setCustomConfig({ openaiModel: e.target.value })}
                     placeholder="gpt-5.1"
                     className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-600"
                   />
@@ -267,8 +238,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <label className="text-xs font-medium text-slate-600 dark:text-slate-400 block mb-1">{t.baseUrl}</label>
                   <input
                     type="text"
-                    value={localBaseUrl}
-                    onChange={(e) => setLocalBaseUrl(e.target.value)}
+                    value={customBaseUrl}
+                    onChange={(e) => setCustomConfig({ customBaseUrl: e.target.value })}
                     placeholder="http://localhost:11434/v1"
                     className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600"
                   />
@@ -277,8 +248,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <label className="text-xs font-medium text-slate-600 dark:text-slate-400 block mb-1">API Key (optional)</label>
                   <input
                     type="password"
-                    value={localApiKey}
-                    onChange={(e) => setLocalApiKey(e.target.value)}
+                    value={customApiKey}
+                    onChange={(e) => setCustomConfig({ customApiKey: e.target.value })}
                     placeholder="sk-..."
                     className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600"
                   />
@@ -287,8 +258,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <label className="text-xs font-medium text-slate-600 dark:text-slate-400 block mb-1">{t.modelName}</label>
                   <input
                     type="text"
-                    value={localModel}
-                    onChange={(e) => setLocalModel(e.target.value)}
+                    value={customModel}
+                    onChange={(e) => setCustomConfig({ customModel: e.target.value })}
                     placeholder="llama3"
                     className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600"
                   />
@@ -297,19 +268,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             )}
 
           </div>
-        </div>
-
-        <div className="bg-slate-50 dark:bg-slate-950 p-4 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-3">
-          <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors">
-            {t.cancel}
-          </button>
-          <button
-            onClick={handleSave}
-            className="px-4 py-2 text-sm font-medium text-white bg-slate-900 dark:bg-slate-700 hover:bg-slate-800 dark:hover:bg-slate-600 rounded-lg shadow-sm flex items-center gap-2"
-          >
-            <Check size={16} />
-            {t.saveSettings}
-          </button>
         </div>
       </div>
     </div>
